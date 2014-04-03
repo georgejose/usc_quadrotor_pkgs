@@ -1,15 +1,5 @@
-#include <ros/ros.h>
+#include "usc_quadrotor.h"
 
-#include <interactive_markers/interactive_marker_server.h>
-#include <interactive_markers/menu_handler.h>
-
-#include <tf/transform_broadcaster.h>
-#include <tf/tf.h>
-
-#include <math.h>
-#include <string.h>
-
-#define FAN_R 0.5
 using namespace visualization_msgs;
 
 void processFeedback(const InteractiveMarkerFeedbackConstPtr &feedback ){
@@ -34,10 +24,7 @@ class Quadrocopter{
 		marker.color.b = 0.5;
 		marker.color.a = 1.0;
 
-		marker.pose.position.x = position.m_floats[0];
-		marker.pose.position.y = position.m_floats[1];
-		// marker.pose.position.z = position.m_floats[2];
-		// tf::pointTFToMsg(position, marker.pose.position);
+		tf::pointTFToMsg(position, marker.pose.position);
 
 		return marker;
 	}
@@ -83,6 +70,29 @@ public:
 	}
 };
 
+bool quadrotor_positions[MAP_SIZE][MAP_SIZE] = {{false}};
+
+
+tf::Vector3 get_random_pose(){
+	
+	int x = rand()%MAP_SIZE, y = rand()%MAP_SIZE;
+	while( quadrotor_positions[x][y]){
+		x = rand()%MAP_SIZE;
+		y = rand()%MAP_SIZE;
+	}
+
+	quadrotor_positions[x][y] = true;
+	quadrotor_positions[x-1][y] = true;
+	quadrotor_positions[x][y-1] = true;
+	quadrotor_positions[x-1][y-1] = true;
+	quadrotor_positions[x+1][y+1] = true;
+	quadrotor_positions[x+1][y] = true;
+	quadrotor_positions[x][y+1] = true;
+	quadrotor_positions[x-1][y+1] = true;
+	quadrotor_positions[x+1][y-1] = true;
+
+	return tf::Vector3 (x, y, 0.0);;
+}
 
 int main(int argc, char** argv){
 	ros::init(argc, argv, "usc_quadrotor");
@@ -90,17 +100,15 @@ int main(int argc, char** argv){
   	// create an interactive marker server on the topic namespace simple_marker
   	interactive_markers::InteractiveMarkerServer server("quadrotor_server");
 
- 	Quadrocopter Q1(tf::Vector3(0.0, 0.0, 0.0), "Q1");
-	server.insert( Q1.get_marker(), &processFeedback);	// tell the server to call processFeedback() when feedback arrives for it
-	
-	Quadrocopter Q2(tf::Vector3(2.0, 3.0, 4.0), "Q2");
-	server.insert( Q2.get_marker(), &processFeedback);
+  	for(int i=0; i< NUM_OF_QUAD; i++){
+  		char name[5];
+  		sprintf(name, "Q%d", (i+1));
+  		Quadrocopter Q(get_random_pose(), name);
+		server.insert( Q.get_marker(), &processFeedback);	// tell the server to call processFeedback() when feedback arrives for it	
+  	}
 
-	Quadrocopter Q3(tf::Vector3(3.0, 3.0, 3.0), "Q3");
-	server.insert( Q3.get_marker(), &processFeedback);
 	server.applyChanges();			// 'commit' changes and send to all clients
 
-	// start the ROS main loop
 	ros::spin();
 	return 0;
 }
