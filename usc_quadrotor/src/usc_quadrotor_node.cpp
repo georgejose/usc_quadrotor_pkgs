@@ -47,7 +47,10 @@ class Quadrocopter{
 	}
 
 	void move(const ros::TimerEvent& event){
-	    int_marker.pose.position.z = int_marker.pose.position.z + 0.1;
+		if(int_marker.pose.position.z > 5)
+			int_marker.pose.position.z = 0.0;
+	    else
+		    int_marker.pose.position.z = int_marker.pose.position.z + 0.1;
 	    server->setPose( int_marker.name, int_marker.pose);
 		server->applyChanges();
 	}
