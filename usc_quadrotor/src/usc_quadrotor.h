@@ -9,6 +9,8 @@
 
 #include <tf/transform_broadcaster.h>
 #include <tf/tf.h>
+#include <math.h>
+#include <boost/thread/mutex.hpp>
 
 #include <math.h>
 #include <string.h>

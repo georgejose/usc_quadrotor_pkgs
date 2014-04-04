@@ -1,16 +1,20 @@
 #include "usc_quadrotor.h"
+#define UPDATE_RATE 0.1
 
 using namespace visualization_msgs;
 
-void processFeedback(const InteractiveMarkerFeedbackConstPtr &feedback ){
+boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
+
+void processFeedback(const InteractiveMarkerFeedbackConstPtr &feedback){
 	ROS_INFO_STREAM( feedback->marker_name << " is now at "
 	<< feedback->pose.position.x << ", " << feedback->pose.position.y
 	<< ", " << feedback->pose.position.z );
 }
 
-class Quadrocopter{
-	
+class Quadrocopter{	
 	InteractiveMarker int_marker;
+	ros::Timer timer;
+	ros::NodeHandle nh;
 
 	Marker makeCylinder( InteractiveMarker &msg, const tf::Vector3 &position){
 		Marker marker;
@@ -42,13 +46,19 @@ class Quadrocopter{
 		return msg.controls.back();
 	}
 
-public:
+	void move(const ros::TimerEvent& event){
+	    int_marker.pose.position.z = int_marker.pose.position.z + 0.1;
+	    server->setPose( int_marker.name, int_marker.pose);
+		server->applyChanges();
+	}
+	
 
+public:
 	InteractiveMarker get_marker(){
 		return int_marker;
 	}
 
-	Quadrocopter( const tf::Vector3 &position, const std::string &quadrotor_name){
+	Quadrocopter( 	const tf::Vector3 &position, const std::string &quadrotor_name){
 		int_marker.header.frame_id = "base_link";
 		tf::pointTFToMsg(position, int_marker.pose.position);
 
@@ -67,14 +77,17 @@ public:
 		int_marker.controls.push_back(control);
 		control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
 		int_marker.controls.push_back(control);
+
+		server->insert(int_marker);
+  		server->setCallback(int_marker.name, &processFeedback);
+
+		timer = nh.createTimer(ros::Duration(UPDATE_RATE), &Quadrocopter::move, this);
 	}
 };
 
 bool quadrotor_positions[MAP_SIZE][MAP_SIZE] = {{false}};
 
-
-tf::Vector3 get_random_pose(){
-	
+tf::Vector3 get_random_pose(){	
 	int x = rand()%MAP_SIZE, y = rand()%MAP_SIZE;
 	while( quadrotor_positions[x][y]){
 		x = rand()%MAP_SIZE;
@@ -94,21 +107,29 @@ tf::Vector3 get_random_pose(){
 	return tf::Vector3 (x, y, 0.0);;
 }
 
+
 int main(int argc, char** argv){
 	ros::init(argc, argv, "usc_quadrotor");
-
+  	
   	// create an interactive marker server on the topic namespace simple_marker
-  	interactive_markers::InteractiveMarkerServer server("quadrotor_server");
+  	server.reset( new interactive_markers::InteractiveMarkerServer("quadrotor_server","",false) );
+  	// interactive_markers::InteractiveMarkerServer server("quadrotor_server");
 
-  	for(int i=0; i< NUM_OF_QUAD; i++){
+  	Quadrocopter *Q[NUM_OF_QUAD];
+	
+	for(int i=0; i< NUM_OF_QUAD; i++){
   		char name[5];
   		sprintf(name, "Q%d", (i+1));
-  		Quadrocopter Q(get_random_pose(), name);
-		server.insert( Q.get_marker(), &processFeedback);	// tell the server to call processFeedback() when feedback arrives for it	
+  		Q[i] = new Quadrocopter(get_random_pose(), name);
   	}
 
-	server.applyChanges();			// 'commit' changes and send to all clients
-
+	server->applyChanges();			// 'commit' changes and send to all clients
 	ros::spin();
+	server.reset();
+
+	// invoke destructors
+	for (int j = 0; j < NUM_OF_QUAD; j++)
+	  delete Q[j];
+	
 	return 0;
 }

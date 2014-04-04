@@ -7,8 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /InteractiveMarkers1
-        - /Grid1
-        - /Grid1/Offset1
       Splitter Ratio: 0.5
     Tree Height: 531
   - Class: rviz/Selection
@@ -82,7 +80,7 @@ Visualization Manager:
       Value: true
   Enabled: true
   Global Options:
-    Background Color: 48; 48; 48
+    Background Color: 107; 41; 8
     Fixed Frame: /world
   Name: root
   Tools:
@@ -103,17 +101,17 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 66.7433
+      Distance: 84.6469
       Focal Point:
         X: 0.360553
         Y: 0.42672
         Z: 1.35109
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.104798
+      Pitch: 0.054798
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.867188
+      Yaw: 0.67719
     Saved: ~
 Window Geometry:
   Displays:
