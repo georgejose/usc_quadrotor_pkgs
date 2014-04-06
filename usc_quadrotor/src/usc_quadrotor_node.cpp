@@ -48,21 +48,31 @@ class Quadrocopter{
 	}
 
 	void move_up(){
-		while(int_marker.pose.position.z < (double)ALTITUDE){
+		while( floorf(int_marker.pose.position.z*100)/100 < ALTITUDE ){
 			int_marker.pose.position.z += STEP;
+			int_marker.pose.position.z = floorf(int_marker.pose.position.z*100)/100;
 		    server->setPose( int_marker.name, int_marker.pose);
 			server->applyChanges();
 			ros::Duration(SLEEP).sleep();
 		}
+		int_marker.pose.position.z = ALTITUDE;
+	    server->setPose( int_marker.name, int_marker.pose);
+		server->applyChanges();
+		ros::Duration(SLEEP).sleep();
 	}
 	
 	void move_down(){
-		while(int_marker.pose.position.z > (double)0){
+		while( floorf(int_marker.pose.position.z*100)/100 > 0.0){
 			int_marker.pose.position.z -= STEP;
+			int_marker.pose.position.z = floorf(int_marker.pose.position.z*100)/100;
 		    server->setPose( int_marker.name, int_marker.pose);
 			server->applyChanges();
 			ros::Duration(SLEEP).sleep();
 		}
+		int_marker.pose.position.z = 0.0;
+	    server->setPose( int_marker.name, int_marker.pose);
+		server->applyChanges();
+		ros::Duration(SLEEP).sleep();
 	}
 
 	void pick_up(){
@@ -71,18 +81,34 @@ class Quadrocopter{
 	}
 
 	void move_side(std::vector<double> d){
-		while(int_marker.pose.position.x!= d[0] || int_marker.pose.position.y!= d[1]){
-			
-			if(d[0]!=int_marker.pose.position.x)
-				int_marker.pose.position.x += (d[0] >= int_marker.pose.position.x ? STEP : -STEP);
+		
+		ROS_INFO_STREAM(d[0]);
+		ROS_INFO_STREAM(d[1]);
+		
+		while(	floorf((d[0]-int_marker.pose.position.x)*10)/10 ||
+				floorf((d[1]-int_marker.pose.position.y)*10)/10){
 
-			if(d[1]!=int_marker.pose.position.y)
-				int_marker.pose.position.y += (d[1] >= int_marker.pose.position.y ? STEP : -STEP);
+			// ROS_INFO_STREAM( floorf((d[1]-int_marker.pose.position.y)*100)/100 );
+
+			if( floorf((d[0]-int_marker.pose.position.x)*10)/10){
+				int_marker.pose.position.x += (d[0] - int_marker.pose.position.x > 0 ? STEP : -STEP);
+				int_marker.pose.position.x = floorf(int_marker.pose.position.x*10)/10;
+			}
+
+			if( floorf((d[1]-int_marker.pose.position.y)*10)/10){
+				int_marker.pose.position.y += (d[1] - int_marker.pose.position.y > 0 ? STEP : -STEP);
+				int_marker.pose.position.y = floorf(int_marker.pose.position.y*10)/10;
+			}
 
 		    server->setPose( int_marker.name, int_marker.pose);
 			server->applyChanges();
 			ros::Duration(SLEEP).sleep();
 		}
+			int_marker.pose.position.y = d[0];
+			int_marker.pose.position.y = d[1];
+			server->setPose( int_marker.name, int_marker.pose);
+			server->applyChanges();
+			ros::Duration(SLEEP).sleep();
 	}
 
 	void place_block(std::vector<double> s, std::vector<double> d){
@@ -97,7 +123,10 @@ class Quadrocopter{
 		while(!destination.empty()){
 			place_block(source.back(), destination.back());
 			source.pop_back();
+			destination.pop_back();
 		}
+		// ROS_INFO_STREAM(int_marker.name);
+		// ros::Duration(3).sleep();
 	}
 	
 public:
@@ -157,7 +186,7 @@ tf::Vector3 get_random_pose(){
 	return tf::Vector3 (x, y, 0.0);
 }
 
-double* get_block(){	
+std::vector<double> get_block(){	
 	int x,y;
 	do{
 		x = rand()%MAP_SIZE;
@@ -166,9 +195,10 @@ double* get_block(){
 	
 	quadrotor_positions[x][y] = true;
 	
-	double *d = new double[3];
-	d[0]=x; d[1]=y; d[2]=0.0;
-	
+	std::vector<double> d;
+	d.push_back((double)x);
+	d.push_back((double)y);
+	d.push_back((double)0);
 	return d;
 }
 
@@ -176,17 +206,14 @@ int main(int argc, char** argv){
 	ros::init(argc, argv, "usc_quadrotor");
   		
   	server.reset( new interactive_markers::InteractiveMarkerServer("quadrotor_server","",false) );
+  	
   	srand ((unsigned int)time(NULL));
-  	double *d1 = get_block();
-  	double *d0 = get_block();
-  	double *s1 = get_block();
-  	double *s0 = get_block();
-  
-  	source.push_back(std::vector<double>(s0,s0+sizeof(s0)/sizeof(double)));
-  	source.push_back(std::vector<double>(s1,s1+sizeof(s1)/sizeof(double)));
+	 
+  	source.push_back(get_block());
+  	source.push_back(get_block());
 
-  	destination.push_back(std::vector<double>(d0,d0+sizeof(d0)/sizeof(double)));
-  	destination.push_back(std::vector<double>(d1,d1+sizeof(d1)/sizeof(double)));
+  	destination.push_back(get_block());
+  	destination.push_back(get_block());
 
   	Quadrocopter *Q[NUM_OF_QUAD];
 	

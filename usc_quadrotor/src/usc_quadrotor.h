@@ -24,5 +24,5 @@
 #define UPDATE_RATE 1
 #define STEP 0.1
 #define ALTITUDE 3
-#define SLEEP 0.1
+#define SLEEP 0.05
 #endif
