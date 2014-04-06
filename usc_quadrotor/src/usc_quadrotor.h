@@ -20,6 +20,9 @@
 
 #define FAN_R 0.5
 #define MAP_SIZE 50
-#define NUM_OF_QUAD 10
-
+#define NUM_OF_QUAD 2
+#define UPDATE_RATE 1
+#define STEP 0.1
+#define ALTITUDE 3
+#define SLEEP 0.1
 #endif

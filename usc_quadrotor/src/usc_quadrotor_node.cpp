@@ -1,9 +1,10 @@
 #include "usc_quadrotor.h"
-#define UPDATE_RATE 0.1
 
 using namespace visualization_msgs;
 
 boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
+std::vector<std::vector<double> > source;
+std::vector<std::vector<double> > destination;
 
 void processFeedback(const InteractiveMarkerFeedbackConstPtr &feedback){
 	ROS_INFO_STREAM( feedback->marker_name << " is now at "
@@ -46,16 +47,59 @@ class Quadrocopter{
 		return msg.controls.back();
 	}
 
-	void move(const ros::TimerEvent& event){
-		if(int_marker.pose.position.z > 5)
-			int_marker.pose.position.z = 0.0;
-	    else
-		    int_marker.pose.position.z = int_marker.pose.position.z + 0.1;
-	    server->setPose( int_marker.name, int_marker.pose);
-		server->applyChanges();
+	void move_up(){
+		while(int_marker.pose.position.z < (double)ALTITUDE){
+			int_marker.pose.position.z += STEP;
+		    server->setPose( int_marker.name, int_marker.pose);
+			server->applyChanges();
+			ros::Duration(SLEEP).sleep();
+		}
 	}
 	
+	void move_down(){
+		while(int_marker.pose.position.z > (double)0){
+			int_marker.pose.position.z -= STEP;
+		    server->setPose( int_marker.name, int_marker.pose);
+			server->applyChanges();
+			ros::Duration(SLEEP).sleep();
+		}
+	}
 
+	void pick_up(){
+		move_down();
+		move_up();
+	}
+
+	void move_side(std::vector<double> d){
+		while(int_marker.pose.position.x!= d[0] || int_marker.pose.position.y!= d[1]){
+			
+			if(d[0]!=int_marker.pose.position.x)
+				int_marker.pose.position.x += (d[0] >= int_marker.pose.position.x ? STEP : -STEP);
+
+			if(d[1]!=int_marker.pose.position.y)
+				int_marker.pose.position.y += (d[1] >= int_marker.pose.position.y ? STEP : -STEP);
+
+		    server->setPose( int_marker.name, int_marker.pose);
+			server->applyChanges();
+			ros::Duration(SLEEP).sleep();
+		}
+	}
+
+	void place_block(std::vector<double> s, std::vector<double> d){
+		move_up();
+		move_side(s);
+		pick_up();
+		move_side(d);
+		move_down();
+	}
+
+	void action(const ros::TimerEvent& event){
+		while(!destination.empty()){
+			place_block(source.back(), destination.back());
+			source.pop_back();
+		}
+	}
+	
 public:
 	InteractiveMarker get_marker(){
 		return int_marker;
@@ -83,40 +127,66 @@ public:
 
 		server->insert(int_marker);
   		server->setCallback(int_marker.name, &processFeedback);
-
-		timer = nh.createTimer(ros::Duration(UPDATE_RATE), &Quadrocopter::move, this);
+  		server->applyChanges();
+		timer = nh.createTimer(ros::Duration(UPDATE_RATE), &Quadrocopter::action, this, true);
 	}
 };
 
 bool quadrotor_positions[MAP_SIZE][MAP_SIZE] = {{false}};
 
-tf::Vector3 get_random_pose(){	
-	int x = rand()%MAP_SIZE, y = rand()%MAP_SIZE;
-	while( quadrotor_positions[x][y]){
-		x = rand()%MAP_SIZE;
-		y = rand()%MAP_SIZE;
-	}
-
-	quadrotor_positions[x][y] = true;
-	quadrotor_positions[x-1][y] = true;
-	quadrotor_positions[x][y-1] = true;
-	quadrotor_positions[x-1][y-1] = true;
-	quadrotor_positions[x+1][y+1] = true;
-	quadrotor_positions[x+1][y] = true;
-	quadrotor_positions[x][y+1] = true;
-	quadrotor_positions[x-1][y+1] = true;
-	quadrotor_positions[x+1][y-1] = true;
-
-	return tf::Vector3 (x, y, 0.0);;
+bool check_map(int x, int y){
+	return 	quadrotor_positions[x  ][y  ] ||
+			quadrotor_positions[x-1][y  ] ||
+			quadrotor_positions[x  ][y-1] ||
+			quadrotor_positions[x-1][y-1] ||
+			quadrotor_positions[x+1][y+1] ||
+			quadrotor_positions[x+1][y  ] ||
+			quadrotor_positions[x  ][y+1] ||
+			quadrotor_positions[x-1][y+1] ||
+			quadrotor_positions[x+1][y-1];
 }
 
+tf::Vector3 get_random_pose(){	
+	int x,y;
+	do{
+		x = rand()%MAP_SIZE;
+		y = rand()%MAP_SIZE;
+	}while( check_map(x,y));
+	
+	quadrotor_positions[x][y] = true;
+	return tf::Vector3 (x, y, 0.0);
+}
+
+double* get_block(){	
+	int x,y;
+	do{
+		x = rand()%MAP_SIZE;
+		y = rand()%MAP_SIZE;
+	}while( check_map(x,y));
+	
+	quadrotor_positions[x][y] = true;
+	
+	double *d = new double[3];
+	d[0]=x; d[1]=y; d[2]=0.0;
+	
+	return d;
+}
 
 int main(int argc, char** argv){
 	ros::init(argc, argv, "usc_quadrotor");
-  	
-  	// create an interactive marker server on the topic namespace simple_marker
+  		
   	server.reset( new interactive_markers::InteractiveMarkerServer("quadrotor_server","",false) );
-  	// interactive_markers::InteractiveMarkerServer server("quadrotor_server");
+  	srand ((unsigned int)time(NULL));
+  	double *d1 = get_block();
+  	double *d0 = get_block();
+  	double *s1 = get_block();
+  	double *s0 = get_block();
+  
+  	source.push_back(std::vector<double>(s0,s0+sizeof(s0)/sizeof(double)));
+  	source.push_back(std::vector<double>(s1,s1+sizeof(s1)/sizeof(double)));
+
+  	destination.push_back(std::vector<double>(d0,d0+sizeof(d0)/sizeof(double)));
+  	destination.push_back(std::vector<double>(d1,d1+sizeof(d1)/sizeof(double)));
 
   	Quadrocopter *Q[NUM_OF_QUAD];
 	
