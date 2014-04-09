@@ -214,14 +214,8 @@ int main(int argc, char** argv){
 
   	destination.push_back(get_block());
   	destination.push_back(get_block());
-
-  	Quadrocopter *Q[NUM_OF_QUAD];
-	
-	for(int i=0; i< NUM_OF_QUAD; i++){
-  		char name[5];
-  		sprintf(name, "Q%d", (i+1));
-  		Q[i] = new Quadrocopter(get_random_pose(), name);
-  	}
+	char name[5] = "Q";
+  	Quadrocopter Q = new Quadrocopter(get_random_pose(), name);
 
 	server->applyChanges();			// 'commit' changes and send to all clients
 	ros::spin();
