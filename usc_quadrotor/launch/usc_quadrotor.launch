@@ -1,12 +1,12 @@
 <launch>
-  <node name="Q1" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
-  <node name="Q2" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
-  <node name="Q3" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
-  <node name="Q4" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
-  <node name="Q5" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
-  <node name="Q6" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
-  <node name="Q7" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
-  <node name="Q8" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
-  <node name="Q9" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
-  <node name="Q10" pkg="usc_quadrotor" type="usc_quadrotor_node.cpp" />
+  <node name="Q1" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node name="Q2" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node name="Q3" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node name="Q4" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node name="Q5" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node name="Q6" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node name="Q7" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node name="Q8" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node name="Q9" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node name="Q10" pkg="usc_quadrotor" type="usc_quadrotor_node" />
 </launch>
