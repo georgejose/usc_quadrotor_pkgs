@@ -7,6 +7,11 @@ Panels:
         - /Global Options1
         - /Status1
         - /InteractiveMarkers1
+        - /TF1
+        - /TF1/Status1
+        - /TF1/Frames1
+        - /TF1/Frames1//Q11
+        - /TF1/Frames1//Q21
       Splitter Ratio: 0.5
     Tree Height: 531
   - Class: rviz/Selection
@@ -44,6 +49,10 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
+        /Q1:
+          Value: true
+        /Q2:
+          Value: true
         /base_link:
           Value: true
         /world:
@@ -56,6 +65,10 @@ Visualization Manager:
       Show Names: true
       Tree:
         /world:
+          /Q1:
+            {}
+          /Q2:
+            {}
           /base_link:
             {}
       Update Interval: 0
@@ -101,17 +114,17 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 84.6469
+      Distance: 91.4986
       Focal Point:
         X: 0.360553
         Y: 0.42672
         Z: 1.35109
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.134798
+      Pitch: -0.010202
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.71719
+      Yaw: 1.44719
     Saved: ~
 Window Geometry:
   Displays:
