@@ -3,8 +3,8 @@
 using namespace visualization_msgs;
 
 boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
-std::vector<std::vector<double> > source;
-std::vector<std::vector<double> > destination;
+std::list<std::vector<double> > source;
+std::list<std::vector<double> > destination;
 
 void processFeedback(const InteractiveMarkerFeedbackConstPtr &feedback){
 	ROS_INFO_STREAM( feedback->marker_name << " is now at "
@@ -52,7 +52,7 @@ class Quadrocopter{
 		return msg.controls.back();
 	}
 
-	void gripper(std::string frame, std::string name){
+	bool gripper(std::string frame, std::string name){
 		ros::ServiceClient client = nh.serviceClient<usc_quadrotor::change_frame>("change_frame");
 		usc_quadrotor::change_frame srv;
 		srv.request.name = name;
@@ -61,7 +61,11 @@ class Quadrocopter{
 		srv.request.y = (int)pos_y;
 		while(!client.call(srv));
 
+		if(!srv.response.change)
+			return false;
+
 		cube_name = srv.response.name; 
+		return true;
 	}
 
 	void move_up(){
@@ -82,12 +86,6 @@ class Quadrocopter{
 		}
 		pos_z = 0.0;
 		ros::Duration(SLEEP).sleep();
-	}
-
-	void pick_up(){
-		move_down();
-		gripper(int_marker.header.frame_id, "none");
-		move_up();
 	}
 
 	void move_side(std::vector<double> d){
@@ -111,32 +109,66 @@ class Quadrocopter{
 			ros::Duration(SLEEP).sleep();
 	}
 
-	void place_block(int i, int j){
-		ROS_INFO("%s moving block from (%.2f %.2f %.2f) to (%.2f %.2f %.2f)",
-			int_marker.name.c_str(), source[i][0],source[i][1],source[i][2],
-			destination[j][0],destination[j][1],destination[j][2]);
-		move_up();
-		move_side(source[i]);
-		pick_up();
-		move_side(destination[j]);
+	bool pick_up(){
 		move_down();
-		gripper("world", cube_name);
+		if(!gripper(int_marker.header.frame_id, "none"))
+			return false;
+		move_up();
+		return true;
+	}
+
+	int place_block(std::vector<double> s, std::vector<double> d, bool dest){
+		
+		if(dest)
+			goto here;
+
+		ROS_INFO("%s moving block from (%.2f %.2f %.2f) to (%.2f %.2f %.2f)",
+			int_marker.name.c_str(), s[0],s[1],s[2],d[0],d[1],d[2]);
+		move_up();
+		move_side(s);
+		if(!pick_up())
+			return 1;
+	here:
+		move_side(d);
+		move_down();
+		if(!gripper("world", cube_name))
+			return 2;
+		return 0;
 	}
 
 	void action(){
 		while(!destination.empty()){
+			bool dest = false;
 			int i,j;
-			do{
-				i=rand()%source.size();
-			}while(source[i][0]==-1);
+			std::list<std::vector<double> >::iterator it1;
+			std::list<std::vector<double> >::iterator it2;
 
-			do{
-				j=rand()%destination.size();
-			}while(destination[i][0]==-1);
+			
+			i=rand()%source.size();
+			it1 = source.begin();
+			while(i--)
+				it1=it1++;
+		there:
+			j=rand()%destination.size();
+			it2 = destination.begin();
+			while(j--)
+				it2=it2++;
 
-			place_block( i, j);
-			source[i][0]=-1;
-			destination[j][0]=-1;
+			int err = place_block( *it1, *it2, dest);
+			
+			if(err == 1){ 
+				source.erase(it1); 
+				continue;
+			}
+			else if(err == 2){ 
+				destination.erase(it2);
+				move_up();
+ 				dest = true;
+ 				goto there;
+			}
+			
+			source.erase(it1); 
+			destination.erase(it2);
 		}
 	}
 
@@ -251,7 +283,7 @@ int main(int argc, char** argv){
 
   	char *name = argv[1];
 	
-  	fill(5);
+  	fill(NUM_CUBES);
 
   	Quadrocopter Q(get_random_pose(), name);
 

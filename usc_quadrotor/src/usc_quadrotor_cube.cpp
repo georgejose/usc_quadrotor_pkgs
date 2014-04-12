@@ -161,35 +161,46 @@ void fill(int blocks){
 Cube *C[NUM_CUBES];
 
 bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::change_frame::Response &res){
+	res.change = false;
 	
 	if(req.name.compare("none")!=0){
+		ROS_INFO("Trying to drop the block");
+		bool exist = false;
 		for(int i=0; i<source.size(); i++){
-			if( req.name.compare(C[i]->get_name()) == 0){ 			
-	  			C[i]->set_frame(req.frame_id);
-				C[i]->set_x((double)req.x);
-				C[i]->set_y((double)req.y);
-				C[i]->set_z((double)0);
-	  			server->applyChanges();
-	  			res.name = "none";
-	  			break;
-	  		}
-	  	}
+			if(C[i]->get_z() == 0 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
+				exist = true;
+			}
+		}
+		if(!exist){
+			for(int i=0; i<source.size(); i++){
+				if( req.name.compare(C[i]->get_name()) == 0){ 			
+		  			C[i]->set_frame(req.frame_id);
+					C[i]->set_x((double)req.x);
+					C[i]->set_y((double)req.y);
+					C[i]->set_z((double)0);
+		  			server->applyChanges();
+		  			res.name = "none";
+		  			res.change = true;
+		  			break;
+		  		}
+		  	}
+		}
 	}
 	else{
 	  	for(int i=0; i<source.size(); i++){
+	  		ROS_INFO("Looking for block to pick up");
 	  		if(C[i]->get_z() == 0 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
-	  			
 	  			C[i]->set_frame(req.frame_id);
   				C[i]->set_x((double)0);
   				C[i]->set_y((double)0);
   				C[i]->set_z((double)-0.5);	
 	  			server->applyChanges();
 	  			res.name = C[i]->get_name();
+	  			res.change = true;
 	  			break;
 	  		}
 	  	}
 	}
-	res.change = true;
 }
 
 int main(int argc, char** argv){

@@ -3,8 +3,8 @@
   <node name="usc_tf" pkg="usc_quadrotor" type="usc_quadrotor_transform" output="screen"/>
   <node name="cubes" pkg="usc_quadrotor" type="usc_quadrotor_cube" output="screen"/>
   <node  name="Q1" pkg="usc_quadrotor" type="usc_quadrotor_node" args="Q1" output="screen"/>
-  <!-- node  name="Q2" pkg="usc_quadrotor" type="usc_quadrotor_node" args="Q2" output="screen"/>
-  <node ns="Q3" name="Q3" pkg="usc_quadrotor" type="usc_quadrotor_node" />
+  <node  name="Q2" pkg="usc_quadrotor" type="usc_quadrotor_node" args="Q2" output="screen"/>
+  <!--node ns="Q3" name="Q3" pkg="usc_quadrotor" type="usc_quadrotor_node" />
   <node ns="Q4" name="Q4" pkg="usc_quadrotor" type="usc_quadrotor_node" />
   <node ns="Q5" name="Q5" pkg="usc_quadrotor" type="usc_quadrotor_node" />
   <node ns="Q6" name="Q6" pkg="usc_quadrotor" type="usc_quadrotor_node" />
