@@ -1,0 +1,7 @@
+string name
+string frame_id
+int32 x
+int32 y
+---
+bool change
+string name

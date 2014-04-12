@@ -1,5 +1,4 @@
 #include "usc_quadrotor.h"
-#include "usc_quadrotor/get_pose.h"
 
 using namespace visualization_msgs;
 
@@ -15,10 +14,9 @@ void processFeedback(const InteractiveMarkerFeedbackConstPtr &feedback){
 
 class Quadrocopter{	
 	InteractiveMarker int_marker;
-	ros::Timer timer;
-	ros::Timer timer2;
 	ros::NodeHandle nh;
-	ros::NodeHandle nh2;
+	ros::Timer timer;
+	std::string cube_name;
 
 	double pos_x;
 	double pos_y;
@@ -54,6 +52,18 @@ class Quadrocopter{
 		return msg.controls.back();
 	}
 
+	void gripper(std::string frame, std::string name){
+		ros::ServiceClient client = nh.serviceClient<usc_quadrotor::change_frame>("change_frame");
+		usc_quadrotor::change_frame srv;
+		srv.request.name = name;
+		srv.request.frame_id = frame;
+		srv.request.x = (int)pos_x;
+		srv.request.y = (int)pos_y;
+		while(!client.call(srv));
+
+		cube_name = srv.response.name; 
+	}
+
 	void move_up(){
 		while( floorf(pos_z*100)/100 < ALTITUDE ){
 			pos_z += STEP;
@@ -76,6 +86,7 @@ class Quadrocopter{
 
 	void pick_up(){
 		move_down();
+		gripper(int_marker.header.frame_id, "none");
 		move_up();
 	}
 
@@ -100,21 +111,32 @@ class Quadrocopter{
 			ros::Duration(SLEEP).sleep();
 	}
 
-	void place_block(std::vector<double> s, std::vector<double> d){
+	void place_block(int i, int j){
 		ROS_INFO("%s moving block from (%.2f %.2f %.2f) to (%.2f %.2f %.2f)",
-			int_marker.name.c_str(), s[0],s[1],s[2],d[0],d[1],d[2]);
+			int_marker.name.c_str(), source[i][0],source[i][1],source[i][2],
+			destination[j][0],destination[j][1],destination[j][2]);
 		move_up();
-		move_side(s);
+		move_side(source[i]);
 		pick_up();
-		move_side(d);
+		move_side(destination[j]);
 		move_down();
+		gripper("world", cube_name);
 	}
 
 	void action(){
 		while(!destination.empty()){
-			place_block(source.back(), destination.back());
-			source.pop_back();
-			destination.pop_back();
+			int i,j;
+			do{
+				i=rand()%source.size();
+			}while(source[i][0]==-1);
+
+			do{
+				j=rand()%destination.size();
+			}while(destination[i][0]==-1);
+
+			place_block( i, j);
+			source[i][0]=-1;
+			destination[j][0]=-1;
 		}
 	}
 
@@ -137,7 +159,7 @@ public:
 		return int_marker;
 	}
 
-	Quadrocopter( 	const std::vector<double> &position, const std::string &quadrotor_name){
+	Quadrocopter( const std::vector<double> &position, const std::string &quadrotor_name){
 
 		int_marker.name = quadrotor_name;
 		
@@ -171,24 +193,54 @@ public:
 	}
 };
 
-std::vector<double> get_random_pose(char *name){	
+std::vector<double> get_random_pose(){	
 	ros::NodeHandle n;
 	ros::ServiceClient client = n.serviceClient<usc_quadrotor::get_pose>("get_pose");
 	usc_quadrotor::get_pose srv;
 	std::vector<double> v;
 
-	if (client.call(srv)){
-		ROS_INFO("Position for is (%d %d %d)",
-			srv.response.x, srv.response.y, srv.response.z);
-		
-		v.push_back((double)srv.response.x);
-		v.push_back((double)srv.response.y);
-		v.push_back((double)srv.response.z);
-		return v;
+	while(!client.call(srv));
+
+	ROS_INFO("Position for is (%d %d %d)",
+		srv.response.x, srv.response.y, srv.response.z);
+	
+	v.push_back((double)srv.response.x);
+	v.push_back((double)srv.response.y);
+	v.push_back((double)srv.response.z);
+	return v;
+}
+
+void fill(int blocks){
+
+	int b= blocks;
+
+	for(int i=0; i<MAP_SIZE; i++){
+		for(int j=0; j<MAP_SIZE; j++){
+			std::vector<double> v;
+			v.push_back((double)i);
+			v.push_back((double)j);
+			v.push_back((double)0);
+			source.push_back(v);
+			if(--b<1)
+				break;
+		}
+		if(b<1)
+			break;
 	}
-	else{
-		ROS_ERROR("Failed to call service get_pose");
-		ros::shutdown();
+
+	b = blocks;
+	for(int i=MAP_SIZE-1; i>=0; i--){
+		for(int j=MAP_SIZE-1; j>=0; j--){
+			std::vector<double> v;
+			v.push_back((double)i);
+			v.push_back((double)j);
+			v.push_back((double)0);
+			destination.push_back(v);
+			if(--b<1)
+				break;
+		}
+		if(b<1)
+			break;
 	}
 }
 
@@ -199,11 +251,7 @@ int main(int argc, char** argv){
 
   	char *name = argv[1];
 	
-  	source.push_back(get_random_pose());
-  	source.push_back(get_random_pose());
-
-  	destination.push_back(get_random_pose());
-  	destination.push_back(get_random_pose());
+  	fill(5);
 
   	Quadrocopter Q(get_random_pose(), name);
 

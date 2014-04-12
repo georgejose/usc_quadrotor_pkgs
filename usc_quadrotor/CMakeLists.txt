@@ -60,6 +60,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
    FILES
    get_pose.srv
+   change_frame.srv
  )
 
 ## Generate actions in the 'action' folder
@@ -109,17 +110,23 @@ include_directories(
 
 ## Declare a cpp executable
  add_executable(usc_quadrotor_node src/usc_quadrotor_node.cpp)
+ add_executable(usc_quadrotor_cube src/usc_quadrotor_cube.cpp)
  add_executable(usc_quadrotor_transform src/usc_quadrotor_transform.cpp)
  add_executable(usc_quadrotor_server src/usc_quadrotor_server.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
  add_dependencies(usc_quadrotor_node usc_quadrotor_generate_messages_cpp)
+ add_dependencies(usc_quadrotor_cube usc_quadrotor_generate_messages_cpp)
  add_dependencies(usc_quadrotor_transform usc_quadrotor_generate_messages_cpp)
  add_dependencies(usc_quadrotor_server usc_quadrotor_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(usc_quadrotor_node
+   ${catkin_LIBRARIES}
+ )
+
+ target_link_libraries(usc_quadrotor_cube
    ${catkin_LIBRARIES}
  )
 
