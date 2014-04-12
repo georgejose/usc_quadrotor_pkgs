@@ -26,7 +26,8 @@
 #define FAN_R 0.5
 #define MAP_SIZE 50
 #define NUM_OF_QUAD 2
-#define NUM_CUBES 5
+#define NUM_CUBES 15
+#define NUM_STRUCT 5
 #define UPDATE_RATE (1/2)
 #define STEP 0.1
 #define ALTITUDE 3

@@ -79,12 +79,12 @@ class Quadrocopter{
 	}
 	
 	void move_down(){
-		while( floorf(pos_z*100)/100 > 0.0){
+		while( floorf(pos_z*100)/100 > 1.0){
 			pos_z -= STEP;
 			pos_z = floorf(pos_z*100)/100;
 			ros::Duration(SLEEP).sleep();
 		}
-		pos_z = 0.0;
+		pos_z = 1.0;
 		ros::Duration(SLEEP).sleep();
 	}
 
@@ -147,12 +147,12 @@ class Quadrocopter{
 			i=rand()%source.size();
 			it1 = source.begin();
 			while(i--)
-				it1=it1++;
+				it1++;
 		there:
 			j=rand()%destination.size();
 			it2 = destination.begin();
 			while(j--)
-				it2=it2++;
+				it2++;
 
 			int err = place_block( *it1, *it2, dest);
 			
@@ -163,6 +163,8 @@ class Quadrocopter{
 			else if(err == 2){ 
 				destination.erase(it2);
 				move_up();
+				if(destination.empty())
+					return;
  				dest = true;
  				goto there;
 			}
@@ -242,16 +244,16 @@ std::vector<double> get_random_pose(){
 	return v;
 }
 
-void fill(int blocks){
+void fill(){
 
-	int b= blocks;
+	int b= NUM_CUBES;
 
-	for(int i=0; i<MAP_SIZE; i++){
-		for(int j=0; j<MAP_SIZE; j++){
+	for(int i=1; i<MAP_SIZE-1; i++){
+		for(int j=1; j<MAP_SIZE-1; j++){
 			std::vector<double> v;
 			v.push_back((double)i);
 			v.push_back((double)j);
-			v.push_back((double)0);
+			v.push_back((double)0.5);
 			source.push_back(v);
 			if(--b<1)
 				break;
@@ -260,13 +262,13 @@ void fill(int blocks){
 			break;
 	}
 
-	b = blocks;
-	for(int i=MAP_SIZE-1; i>=0; i--){
-		for(int j=MAP_SIZE-1; j>=0; j--){
+	b = NUM_STRUCT;
+	for(int i=MAP_SIZE/2; i>0; i--){
+		for(int j=MAP_SIZE/2; j>0; j--){
 			std::vector<double> v;
 			v.push_back((double)i);
 			v.push_back((double)j);
-			v.push_back((double)0);
+			v.push_back((double)0.5);
 			destination.push_back(v);
 			if(--b<1)
 				break;
@@ -278,13 +280,16 @@ void fill(int blocks){
 
 int main(int argc, char** argv){
 	ros::init(argc, argv, "usc_quadrotor");
-  		
+
+	struct timeval stime; 
+	gettimeofday(&stime,NULL);
+	srand(stime.tv_usec);
+
   	server.reset( new interactive_markers::InteractiveMarkerServer("quadrotor_server","",false) );
 
-  	char *name = argv[1];
-	
-  	fill(NUM_CUBES);
+  	fill();
 
+  	char *name = argv[1];
   	Quadrocopter Q(get_random_pose(), name);
 
 	server->applyChanges();			// 'commit' changes and send to all clients

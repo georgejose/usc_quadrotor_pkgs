@@ -73,27 +73,27 @@ public:
 		return int_marker;
 	}
 
-	int get_x(){
-		return (int)pos_x;
+	double get_x(){
+		return pos_x;
 	}
 	
-	int get_y(){
-		return (int)pos_y;
+	double get_y(){
+		return pos_y;
 	}
 
-	int get_z(){
-		return (int)pos_z;
+	double get_z(){
+		return pos_z;
 	}
 
-	int set_x(double x){
+	void set_x(double x){
 		pos_x = x;
 	}
 	
-	int set_y(double y){
+	void set_y(double y){
 		pos_y = y;
 	}
 
-	int set_z(double z){
+	void set_z(double z){
 		pos_z = z;
 	}
 
@@ -143,12 +143,12 @@ public:
 
 void fill(int blocks){
 	int b= blocks;
-	for(int i=0; i<MAP_SIZE; i++){
-		for(int j=0; j<MAP_SIZE; j++){
+	for(int i=1; i<MAP_SIZE; i++){
+		for(int j=1; j<MAP_SIZE; j++){
 			std::vector<double> v;
 			v.push_back((double)i);
 			v.push_back((double)j);
-			v.push_back((double)0);
+			v.push_back((double)0.5);
 			source.push_back(v);
 			if(--b<1)
 				break;
@@ -167,7 +167,7 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 		ROS_INFO("Trying to drop the block");
 		bool exist = false;
 		for(int i=0; i<source.size(); i++){
-			if(C[i]->get_z() == 0 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
+			if(C[i]->get_z() == 0.5 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
 				exist = true;
 			}
 		}
@@ -177,10 +177,11 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 		  			C[i]->set_frame(req.frame_id);
 					C[i]->set_x((double)req.x);
 					C[i]->set_y((double)req.y);
-					C[i]->set_z((double)0);
+					C[i]->set_z((double)0.5);
 		  			server->applyChanges();
 		  			res.name = "none";
 		  			res.change = true;
+		  			ROS_INFO("%s's rel_pose is (%.2f %.2f %.2f)", C[i]->get_name().c_str(), C[i]->get_x(), C[i]->get_y(), C[i]->get_z());
 		  			break;
 		  		}
 		  	}
@@ -189,7 +190,7 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 	else{
 	  	for(int i=0; i<source.size(); i++){
 	  		ROS_INFO("Looking for block to pick up");
-	  		if(C[i]->get_z() == 0 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
+	  		if(C[i]->get_z() == 0.5 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
 	  			C[i]->set_frame(req.frame_id);
   				C[i]->set_x((double)0);
   				C[i]->set_y((double)0);
@@ -197,6 +198,7 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 	  			server->applyChanges();
 	  			res.name = C[i]->get_name();
 	  			res.change = true;
+	  			ROS_INFO("%s's rel_pose is (%.2f %.2f %.2f)", C[i]->get_name().c_str(), C[i]->get_x(), C[i]->get_y(), C[i]->get_z());
 	  			break;
 	  		}
 	  	}

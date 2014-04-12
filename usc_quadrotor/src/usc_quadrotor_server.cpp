@@ -34,12 +34,16 @@ bool get_position(usc_quadrotor::get_pose::Request  &req, usc_quadrotor::get_pos
 
 int main(int argc, char **argv){
   ros::init(argc, argv, "add_two_ints_server");
-  ros::NodeHandle n;
-
-  srand ((unsigned int)time(NULL));
   
+  struct timeval stime; 
+  gettimeofday(&stime,NULL);
+  srand((stime.tv_sec * 1000) + (stime.tv_usec / 1000));
+
+  ros::NodeHandle n;
   ros::ServiceServer service = n.advertiseService("get_pose", get_position);
-  ROS_INFO("Position generated");
+  
+  ROS_INFO("Pose Server is ready");
+  
   ros::spin();
 
   return 0;
