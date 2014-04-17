@@ -33,7 +33,7 @@ bool get_position(usc_quadrotor::get_pose::Request  &req, usc_quadrotor::get_pos
 }
 
 int main(int argc, char **argv){
-  ros::init(argc, argv, "add_two_ints_server");
+  ros::init(argc, argv, "usc_quadrotor_server");
   
   struct timeval stime; 
   gettimeofday(&stime,NULL);

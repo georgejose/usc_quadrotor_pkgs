@@ -279,7 +279,7 @@ void fill(){
 }
 
 int main(int argc, char** argv){
-	ros::init(argc, argv, "usc_quadrotor");
+	ros::init(argc, argv, "usc_quadrotor_node");
 
 	struct timeval stime; 
 	gettimeofday(&stime,NULL);
