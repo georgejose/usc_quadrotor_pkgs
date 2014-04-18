@@ -206,7 +206,7 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 }
 
 int main(int argc, char** argv){
-	ros::init(argc, argv, "usc_quadrotor_cube");
+	ros::init(argc, argv, "usc_quadrotor");
 
   	server.reset( new interactive_markers::InteractiveMarkerServer("quadrotor_server","",false) );
 
