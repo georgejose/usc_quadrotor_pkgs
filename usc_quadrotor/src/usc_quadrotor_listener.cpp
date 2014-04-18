@@ -31,11 +31,9 @@ int main(int argc, char** argv){
              distance = sqrt(pow(transform.getOrigin().x(), 2) + pow(transform.getOrigin().y(), 2));
 	     if (distance <= AVOIDANCE_DISTANCE){
 		std::ostringstream s;
-		s << "Q" << i << ", Q" << j << ", D="<<distance;
+		s << "Q" << i << ", Q" << j << ", D="<<distance << ", dx="<<transform.getOrigin().x()<<", dy="<<transform.getOrigin().y();
 		std_msgs::String msg;
 		msg.data = s.str();
-		std::string ss = "";
-		ss = s.str();
 	    	collision_pair.publish(msg);
 		ROS_ERROR("Publish: Collision");
 	      }
