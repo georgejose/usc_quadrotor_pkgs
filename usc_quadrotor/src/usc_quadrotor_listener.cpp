@@ -31,11 +31,12 @@ int main(int argc, char** argv){
              distance = sqrt(pow(transform.getOrigin().x(), 2) + pow(transform.getOrigin().y(), 2));
 	     if (distance <= AVOIDANCE_DISTANCE){
 		std::ostringstream s;
-		s << "Q" << i << ", Q" << j << ", D="<<distance << ", dx="<<transform.getOrigin().x()<<", dy="<<transform.getOrigin().y();
+		s <<"Q"<< i << " Q" << j << " "<<distance << " "<<transform.getOrigin().x()<<" "<<transform.getOrigin().y();
 		std_msgs::String msg;
 		msg.data = s.str();
+		//Message Format is: Quadrotor#1, Quadrotor#2, Euclidean Distance, Distance X axis, Distance Y axis.
 	    	collision_pair.publish(msg);
-		ROS_INFO("Collision between Q%d and Q%d. D=%f, Dx=%f, Dy=%f",i,j,distance,transform.getOrigin().x(),transform.getOrigin().y());
+		//ROS_INFO("Collision between Q%d and Q%d. D=%f, Dx=%f, Dy=%f",i,j,distance,transform.getOrigin().x(),transform.getOrigin().y());
 	      }
       	      
 	   }
