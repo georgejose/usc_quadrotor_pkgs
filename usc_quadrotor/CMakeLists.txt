@@ -114,7 +114,7 @@ include_directories(
  add_executable(usc_quadrotor_transform src/usc_quadrotor_transform.cpp)
  add_executable(usc_quadrotor_server src/usc_quadrotor_server.cpp)
  add_executable(usc_quadrotor_tf_broadcaster src/usc_quadrotor_tf_broadcaster.cpp)
-
+ add_executable(usc_quadrotor_listener src/usc_quadrotor_listener.cpp)
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
  add_dependencies(usc_quadrotor_node usc_quadrotor_generate_messages_cpp)
@@ -140,6 +140,9 @@ include_directories(
  )
 
    target_link_libraries(usc_quadrotor_tf_broadcaster
+   ${catkin_LIBRARIES}
+ )
+  target_link_libraries(usc_quadrotor_listener
    ${catkin_LIBRARIES}
  )
 #############
