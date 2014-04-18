@@ -1,6 +1,8 @@
 #ifndef __X_H_INCLUDED__
 #define __X_H_INCLUDED__
+
 #include <ros/ros.h>
+
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>
 
