@@ -27,6 +27,7 @@
 #define NUM_CUBES 15
 #define NUM_STRUCT 5
 #define UPDATE_RATE (1/2)
+#define CUBE_SLEEP 0.01
 #define STEP 0.1
 #define ALTITUDE 3
 #define SLEEP 0.05

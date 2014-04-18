@@ -64,7 +64,7 @@ class Cube{
 			q.setRPY(0, 0, 0);
 			transform.setRotation(q);
 			br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), frame_name, int_marker.name));
-			ros::Duration(UPDATE_RATE).sleep();
+			ros::Duration(CUBE_SLEEP).sleep();
 		}
 	}
 	
@@ -117,7 +117,7 @@ public:
 		pos_z = position[2];		
 		
 		boost::thread pub(&Cube::publisher_callback, this);
-		//timer = nh.createTimer(ros::Duration(UPDATE_RATE), &Cube::publisher_callback, this);
+		// timer = nh.createTimer(ros::Duration(UPDATE_RATE), &Cube::publisher_callback, this);
 
 		int_marker.header.frame_id = int_marker.name;
 		int_marker.description = cube_name;
