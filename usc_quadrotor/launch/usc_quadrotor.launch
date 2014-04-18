@@ -2,14 +2,13 @@
   <node name="server" pkg="usc_quadrotor" type="usc_quadrotor_server" output="screen"/>
   <node name="usc_tf" pkg="usc_quadrotor" type="usc_quadrotor_transform" output="screen"/>
   <node name="cubes" pkg="usc_quadrotor" type="usc_quadrotor_cube" output="screen"/>
-  <node pkg="usc_quadrotor" type="usc_quadrotor_listener" name="listener" />
   <node  name="Q1" pkg="usc_quadrotor" type="usc_quadrotor_node" args="Q1" output="screen"/>
   <node  name="Q2" pkg="usc_quadrotor" type="usc_quadrotor_node" args="Q2" output="screen"/>
   
   <node pkg="usc_quadrotor" type="usc_quadrotor_tf_broadcaster"  args="/Q1" name="Q1_tf_broadcaster" />
   <node pkg="usc_quadrotor" type="usc_quadrotor_tf_broadcaster"  args="/Q2" name="Q2_tf_broadcaster" />
 
-
+  <node pkg="usc_quadrotor" type="usc_quadrotor_listener" name="listener" output="screen"/>
 
   <!--node ns="Q3" name="Q3" pkg="usc_quadrotor" type="usc_quadrotor_node" />
   <node ns="Q4" name="Q4" pkg="usc_quadrotor" type="usc_quadrotor_node" />

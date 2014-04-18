@@ -35,7 +35,7 @@ int main(int argc, char** argv){
 		std_msgs::String msg;
 		msg.data = s.str();
 	    	collision_pair.publish(msg);
-		ROS_ERROR("Publish: Collision");
+		ROS_INFO("Collision between Q%d and Q%d. D=%f, Dx=%f, Dy=%f",i,j,distance,transform.getOrigin().x(),transform.getOrigin().y());
 	      }
       	      
 	   }
