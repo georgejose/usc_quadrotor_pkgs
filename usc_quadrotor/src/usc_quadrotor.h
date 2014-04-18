@@ -31,5 +31,6 @@
 #define STEP 0.1
 #define ALTITUDE 3
 #define SLEEP 0.05
+#define AVOIDANCE_DISTANCE 5.0
 
 #endif
