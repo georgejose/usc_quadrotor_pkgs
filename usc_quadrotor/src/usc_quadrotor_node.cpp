@@ -1,4 +1,5 @@
 #include "usc_quadrotor.h"
+#include <math.h>
 
 using namespace visualization_msgs;
 
@@ -12,7 +13,7 @@ void processFeedback(const InteractiveMarkerFeedbackConstPtr &feedback){
 	<< ", " << feedback->pose.position.z );
 }
 
-class Quadrocopter{	
+class Quadrocopter{
 	InteractiveMarker int_marker;
 	ros::NodeHandle nh;
 	ros::Timer timer;
@@ -21,6 +22,12 @@ class Quadrocopter{
 	double pos_x;
 	double pos_y;
 	double pos_z;
+
+    // TODO (Jay Chen#1#): According to the distance values we get between QRs,
+    //try to find reasonable values for NUM_QR, MIN_DISTANCE, AVOID_SET_LENGHT.
+	int    NUM_QR;
+    double MIN_DISTANCE
+    double AVOID_SET_LENGHT
 
 	Marker makeCylinder( InteractiveMarker &msg, const tf::Vector3 &position){
 		Marker marker;
@@ -64,7 +71,7 @@ class Quadrocopter{
 		if(!srv.response.change)
 			return false;
 
-		cube_name = srv.response.name; 
+		cube_name = srv.response.name;
 		return true;
 	}
 
@@ -77,7 +84,7 @@ class Quadrocopter{
 		pos_z = ALTITUDE;
 		ros::Duration(SLEEP).sleep();
 	}
-	
+
 	void move_down(){
 		while( floorf(pos_z*100)/100 > 1.0){
 			pos_z -= STEP;
@@ -118,7 +125,7 @@ class Quadrocopter{
 	}
 
 	int place_block(std::vector<double> s, std::vector<double> d, bool dest){
-		
+
 		if(dest)
 			goto here;
 
@@ -143,7 +150,7 @@ class Quadrocopter{
 			std::list<std::vector<double> >::iterator it1;
 			std::list<std::vector<double> >::iterator it2;
 
-			
+
 			i=rand()%source.size();
 			it1 = source.begin();
 			while(i--)
@@ -155,12 +162,12 @@ class Quadrocopter{
 				it2++;
 
 			int err = place_block( *it1, *it2, dest);
-			
-			if(err == 1){ 
-				source.erase(it1); 
+
+			if(err == 1){
+				source.erase(it1);
 				continue;
 			}
-			else if(err == 2){ 
+			else if(err == 2){
 				destination.erase(it2);
 				move_up();
 				if(destination.empty())
@@ -168,8 +175,8 @@ class Quadrocopter{
  				dest = true;
  				goto there;
 			}
-			
-			source.erase(it1); 
+
+			source.erase(it1);
 			destination.erase(it2);
 		}
 	}
@@ -187,7 +194,65 @@ class Quadrocopter{
 		transform.setRotation(q);
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", int_marker.name));
 	}
-	
+
+	long keepout_set(){
+	    long log = 0;
+
+        // TODO (Jay Chen#1#): implement "Distance_between_this_and_i (double)" function
+        // TODO (Jay Chen#1#): What is id of this QR? Set the value to QR_ID
+        for(int i=NUM_QR-1; i>=0; i--){
+            if(i!=QR_ID){
+                if(Distance_between_this_and_i <= MIN_DISTANCE) log++;
+            }
+            log = log << 1;
+        }
+        return log;
+	}
+
+	long avoid_set(){
+        long log = 0;
+        double dx, dy;
+
+        // TODO (Jay Chen#1#): Implement "x_Distance_between_this_and_i" & "y_Distance_between_this_and_i" functions.
+        dx = x_Distance_between_this_and_i;
+        dy = y_Distance_between_this_and_i;
+
+        for(int i=NUM_QR-1; i>=0; i--){
+            if(dx <= MIN_DISTANCE ||dy <= AVOID_SET_LENGHT) log++;
+            log = log << 1;
+        }
+        return log;
+	}
+
+    /*Collision Avoidance
+    Input: Null
+    Output: the angle to change direction ((-pi,pi), 0:do not need to change)
+    */
+	float collision_avoidance(){
+	    double rotate_angle = 0;
+        double x=0, y=0; /*x, y values between QR and others in/at the boundary of keepout_set and avoid_set*/
+        double pi=3.14159265
+        long sensor = 0;
+
+        sensor = keepout_set();
+        sensor = sensor & avoid_set();
+
+        if(sensor != 0){
+            for(int i=NUM_QR-1; i>=0; i--){
+                if(sensor%2 == 1){
+                    // TODO (Jay Chen#1#): Implement "x_Distance_between_this_and_i" & "y_Distance_between_this_and_i" functions.
+                    x += x_Distance_between_this_and_i;
+                    y += y_Distance_between_this_and_i;
+                    sensor = sensor >> 1;
+                }
+            }
+            rotate_angle = atan2(y,x)+pi/2;
+        }
+        return rotate_angle;
+	}
+
+
+
 public:
 	InteractiveMarker get_marker(){
 		return int_marker;
@@ -196,13 +261,13 @@ public:
 	Quadrocopter( const std::vector<double> &position, const std::string &quadrotor_name){
 
 		int_marker.name = quadrotor_name;
-		
+
 		pos_x = position[0];
 		pos_y = position[1];
-		pos_z = position[2];		
+		pos_z = position[2];
 
 		timer = nh.createTimer(ros::Duration(UPDATE_RATE), &Quadrocopter::publisher_callback, this);
-		
+
 		int_marker.header.frame_id = int_marker.name;
 		int_marker.description = quadrotor_name;
 		tf::pointTFToMsg(tf::Vector3(0.0, 0.0, 0.0), int_marker.pose.position);
@@ -227,7 +292,7 @@ public:
 	}
 };
 
-std::vector<double> get_random_pose(){	
+std::vector<double> get_random_pose(){
 	ros::NodeHandle n;
 	ros::ServiceClient client = n.serviceClient<usc_quadrotor::get_pose>("get_pose");
 	usc_quadrotor::get_pose srv;
@@ -237,7 +302,7 @@ std::vector<double> get_random_pose(){
 
 	ROS_INFO("Position for is (%d %d %d)",
 		srv.response.x, srv.response.y, srv.response.z);
-	
+
 	v.push_back((double)srv.response.x);
 	v.push_back((double)srv.response.y);
 	v.push_back((double)srv.response.z);
@@ -281,7 +346,7 @@ void fill(){
 int main(int argc, char** argv){
 	ros::init(argc, argv, "usc_quadrotor");
 
-	struct timeval stime; 
+	struct timeval stime;
 	gettimeofday(&stime,NULL);
 	srand(stime.tv_usec);
 
@@ -295,6 +360,6 @@ int main(int argc, char** argv){
 	server->applyChanges();			// 'commit' changes and send to all clients
 	ros::spin();
 	server.reset();
-	
+
 	return 0;
 }
