@@ -64,7 +64,7 @@ class Cube{
 			q.setRPY(0, 0, 0);
 			transform.setRotation(q);
 			br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), frame_name, int_marker.name));
-			ros::Duration(UPDATE_RATE).sleep();
+			ros::Duration(CUBE_SLEEP).sleep();
 		}
 	}
 	

@@ -6,8 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /InteractiveMarkers1
-        - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 531
@@ -43,25 +41,9 @@ Visualization Manager:
       Update Topic: /quadrotor_server/update
       Value: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
-        /C1:
-          Value: true
-        /C2:
-          Value: true
-        /C3:
-          Value: true
-        /C4:
-          Value: true
-        /C5:
-          Value: true
-        /Q1:
-          Value: true
-        /base_link:
-          Value: true
-        /world:
-          Value: true
         All Enabled: true
       Marker Scale: 1
       Name: TF
@@ -69,23 +51,9 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        /world:
-          /C1:
-            {}
-          /C2:
-            {}
-          /C3:
-            {}
-          /C4:
-            {}
-          /C5:
-            {}
-          /Q1:
-            {}
-          /base_link:
-            {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 0.25
       Cell Size: 1
       Class: rviz/Grid
@@ -127,17 +95,17 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 11.986
+      Distance: 41.2305
       Focal Point:
         X: 0.360553
         Y: 0.42672
         Z: 1.35109
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.254798
+      Pitch: 0.549799
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.71219
+      Yaw: 3.81718
     Saved: ~
 Window Geometry:
   Displays:
@@ -155,5 +123,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1301
-  X: 65
+  X: 58
   Y: 24

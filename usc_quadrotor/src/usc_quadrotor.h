@@ -27,8 +27,9 @@
 #define MAP_SIZE 50
 #define NUM_OF_QUAD 2
 #define NUM_CUBES 15
+#define CUBE_SLEEP 0.01
 #define NUM_STRUCT 5
-#define UPDATE_RATE (1/2)
+#define UPDATE_RATE 0.1
 #define STEP 0.1
 #define ALTITUDE 3
 #define SLEEP 0.05
