@@ -32,5 +32,8 @@
 #define ALTITUDE 3
 #define SLEEP 0.05
 #define AVOIDANCE_DISTANCE 5.0
+#define MIN_DISTANCE 3.0
+#define AVOID_SET_LENGHT 2.0
+
 
 #endif
