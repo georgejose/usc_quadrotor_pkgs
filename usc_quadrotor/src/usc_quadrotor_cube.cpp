@@ -167,7 +167,7 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 		ROS_INFO("Trying to drop the block");
 		bool exist = false;
 		for(int i=0; i<source.size(); i++){
-			if(C[i]->get_z() == 0.5 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
+			if(C[i]->get_z() == req.z-0.5 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
 				exist = true;
 			}
 		}
@@ -177,7 +177,7 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 		  			C[i]->set_frame(req.frame_id);
 					C[i]->set_x((double)req.x);
 					C[i]->set_y((double)req.y);
-					C[i]->set_z((double)0.5);
+					C[i]->set_z((double)(req.z-0.5));
 		  			server->applyChanges();
 		  			res.name = "none";
 		  			res.change = true;
@@ -190,7 +190,7 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 	else{
 	  	for(int i=0; i<source.size(); i++){
 	  		ROS_INFO("Looking for block to pick up");
-	  		if(C[i]->get_z() == 0.5 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
+	  		if(C[i]->get_z() == req.z-0.5 && C[i]->get_x() == req.x && C[i]->get_y() == req.y){
 	  			C[i]->set_frame(req.frame_id);
   				C[i]->set_x((double)0);
   				C[i]->set_y((double)0);

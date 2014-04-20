@@ -1,6 +1,4 @@
-#include "ros/ros.h"
 #include "usc_quadrotor.h"
-#include "usc_quadrotor/get_pose.h"
 
 bool quadrotor_positions[MAP_SIZE][MAP_SIZE] = {{false}};
 

@@ -59,6 +59,8 @@ class Quadrocopter{
 		srv.request.frame_id = frame;
 		srv.request.x = (int)pos_x;
 		srv.request.y = (int)pos_y;
+		srv.request.z = (int)pos_z;
+		
 		while(!client.call(srv));
 
 		if(!srv.response.change)
@@ -68,45 +70,48 @@ class Quadrocopter{
 		return true;
 	}
 
+	std::vector<int> get_plan(std::vector<double> d){	
+		ros::NodeHandle n;
+		ros::ServiceClient client = n.serviceClient<usc_quadrotor::trajectory>("get_plan");
+		usc_quadrotor::trajectory srv;
+
+		srv.request.source.push_back(pos_x);
+		srv.request.source.push_back(pos_y);
+		srv.request.source.push_back(pos_z);
+
+		srv.request.destination.push_back((int)d[0]);
+		srv.request.destination.push_back((int)d[1]);
+		srv.request.destination.push_back((int)d[2]);
+
+		while(!client.call(srv));
+
+		return srv.response.path;
+	}
+
+	
 	void move_up(){
-		while( floorf(pos_z*100)/100 < ALTITUDE ){
+
+		double p = pos_z + ALTITUDE + 0.5;
+		
+		while( floorf(pos_z*100)/100 < p ){
 			pos_z += STEP;
 			pos_z = floorf(pos_z*100)/100;
 			ros::Duration(SLEEP).sleep();
 		}
-		pos_z = ALTITUDE;
+		pos_z = p;
 		ros::Duration(SLEEP).sleep();
 	}
 	
 	void move_down(){
-		while( floorf(pos_z*100)/100 > 1.0){
+		double p = pos_z - ALTITUDE + 0.5;
+
+		while( floorf(pos_z*100)/100 > p){
 			pos_z -= STEP;
 			pos_z = floorf(pos_z*100)/100;
 			ros::Duration(SLEEP).sleep();
 		}
-		pos_z = 1.0;
+		pos_z = p;
 		ros::Duration(SLEEP).sleep();
-	}
-
-	void move_side(std::vector<double> d){
-
-		while(	floorf((d[0]-pos_x)*10)/10 ||
-				floorf((d[1]-pos_y)*10)/10){
-
-			if( floorf((d[0]-pos_x)*10)/10){
-				pos_x += (d[0] - pos_x > 0 ? STEP : -STEP);
-				pos_x = floorf(pos_x*10)/10;
-			}
-
-			if( floorf((d[1]-pos_y)*10)/10){
-				pos_y += (d[1] - pos_y > 0 ? STEP : -STEP);
-				pos_y = floorf(pos_y*10)/10;
-			}
-			ros::Duration(SLEEP).sleep();
-		}
-			pos_x = d[0];
-			pos_y = d[1];
-			ros::Duration(SLEEP).sleep();
 	}
 
 	bool pick_up(){
@@ -117,6 +122,52 @@ class Quadrocopter{
 		return true;
 	}
 
+	void move_to(double x, double y, double z){
+
+		while(	floorf((x-pos_x)*10)/10 ||
+				floorf((y-pos_y)*10)/10 ||
+				floorf((z-pos_z)*10)/10 ){
+
+			// ROS_INFO("curently at %f %f %f", pos_x , pos_y , pos_z);
+
+			if( floorf((x-pos_x)*10)/10){
+				pos_x += (x - pos_x > 0 ? STEP : -STEP);
+				pos_x = floorf(pos_x*10)/10;
+			}
+
+			if( floorf((y-pos_y)*10)/10){
+				pos_y += (y - pos_y > 0 ? STEP : -STEP);
+				pos_y = floorf(pos_y*10)/10;
+			}
+
+			if( floorf((z-pos_z)*10)/10){
+				pos_z += (z - pos_z > 0 ? STEP : -STEP);
+				pos_z = floorf(pos_z*10)/10;
+			}
+			ros::Duration(SLEEP).sleep();
+		}
+			pos_x = x;
+			pos_y = y;
+			pos_z = z;
+	}
+
+	void fly_to(std::vector<double> d){
+		
+		std::vector<int> v(get_plan(d));
+
+		ROS_INFO("Received Plan from planner - size %d", (int)v.size());
+
+		for(int i=1; i < v.size(); i++){
+			double dX = (double)(v[i]/100) != 2 ? (double)(v[i]/100) : - 1;
+			double dY = (double)((v[i]%100)/10) !=2 ? (double)((v[i]%100)/10) : - 1;
+			double dZ = (double)(v[i]%10) !=2 ? (double)(v[i]%10) : - 1;
+			
+			// ROS_INFO("step %d %f %f %f", v[i], pos_x + dX, pos_y + dY, pos_z + dZ);
+
+			move_to( pos_x + dX, pos_y + dY, pos_z + dZ);
+		}
+	}
+
 	int place_block(std::vector<double> s, std::vector<double> d, bool dest){
 		
 		if(dest)
@@ -125,11 +176,16 @@ class Quadrocopter{
 		ROS_INFO("%s moving block from (%.2f %.2f %.2f) to (%.2f %.2f %.2f)",
 			int_marker.name.c_str(), s[0],s[1],s[2],d[0],d[1],d[2]);
 		move_up();
-		move_side(s);
+		
+		s[2] += ALTITUDE;
+		fly_to(s);
+		
 		if(!pick_up())
 			return 1;
 	here:
-		move_side(d);
+		d[2] += ALTITUDE;
+		fly_to(d);
+
 		move_down();
 		if(!gripper("world", cube_name))
 			return 2;
@@ -235,7 +291,7 @@ std::vector<double> get_random_pose(){
 
 	while(!client.call(srv));
 
-	ROS_INFO("Position for is (%d %d %d)",
+	ROS_INFO("Random position (%d %d %d)",
 		srv.response.x, srv.response.y, srv.response.z);
 	
 	v.push_back((double)srv.response.x);
@@ -244,7 +300,7 @@ std::vector<double> get_random_pose(){
 	return v;
 }
 
-void fill(){
+void fill( char* file){
 
 	int b= NUM_CUBES;
 
@@ -262,19 +318,19 @@ void fill(){
 			break;
 	}
 
-	b = NUM_STRUCT;
-	for(int i=MAP_SIZE/2; i>0; i--){
-		for(int j=MAP_SIZE/2; j>0; j--){
-			std::vector<double> v;
-			v.push_back((double)i);
-			v.push_back((double)j);
-			v.push_back((double)0.5);
-			destination.push_back(v);
-			if(--b<1)
-				break;
+	std::ifstream i;
+	i.open(file);
+	
+	char *temp = new char[3];
+	
+	while(i>>temp){
+		std::vector<double> v;
+		v.push_back(atof(temp));
+		for(int j=0; j<2; j++){
+			i>>temp;
+			v.push_back(atof(temp));
 		}
-		if(b<1)
-			break;
+		destination.push_back(v);
 	}
 }
 
@@ -287,7 +343,7 @@ int main(int argc, char** argv){
 
   	server.reset( new interactive_markers::InteractiveMarkerServer("quadrotor_server","",false) );
 
-  	fill();
+  	fill(argv[2]);
 
   	char *name = argv[1];
   	Quadrocopter Q(get_random_pose(), name);
