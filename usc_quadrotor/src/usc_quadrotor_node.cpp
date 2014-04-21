@@ -149,6 +149,7 @@ class Quadrocopter{
 			pos_x = x;
 			pos_y = y;
 			pos_z = z;
+			ros::Duration(SLEEP).sleep();
 	}
 
 	void fly_to(std::vector<double> d){
