@@ -1,8 +1,6 @@
 #ifndef __X_H_INCLUDED__
 #define __X_H_INCLUDED__
-
 #include <ros/ros.h>
-
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>
 
@@ -29,9 +27,18 @@
 #define NUM_CUBES 15
 #define CUBE_SLEEP 0.01
 #define NUM_STRUCT 5
+/*<<<<<<< HEAD
 #define UPDATE_RATE 0.1
+=======*/
+#define UPDATE_RATE (1/2)
+#define CUBE_SLEEP 0.01
+// >>>>>>> b3c32f042586516559292f1e43a1e90674433be2
 #define STEP 0.1
 #define ALTITUDE 3
 #define SLEEP 0.05
+#define AVOIDANCE_DISTANCE 5.0
+#define MIN_DISTANCE 3.0
+#define AVOID_SET_LENGHT 2.0
+
 
 #endif
