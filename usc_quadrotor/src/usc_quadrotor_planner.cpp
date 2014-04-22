@@ -128,8 +128,10 @@ double heuristic(point_t const *p1, point_t const *p2) {
   diff1 = (double)(p1->x - p2->x);
   diff2 = (double)(p1->y - p2->y);
   diff3 = (double)(p1->z - p2->z);
-  double distance = sqrt(pow(diff1, 2.0) 
-      + pow(diff2, 2.0) + pow(diff3, 2.0)); 
+  /*double distance = sqrt(pow(diff1, 2.0) 
+      + pow(diff2, 2.0) + pow(diff3, 2.0)); */
+  double distance = abs(diff1) + abs(diff2) + abs(diff3);
+  
   return distance;
 }
 
