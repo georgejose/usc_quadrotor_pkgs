@@ -31,11 +31,17 @@ int main(int argc, char** argv){
 			s1 << "Q" << i; //Source frame
 		 	s2 << "Q" << j; // Target frame
 			listener.lookupTransform(s2.str(), s1.str(), ros::Time(0), transform);
-			distance = sqrt(pow(transform.getOrigin().x(), 2) + pow(transform.getOrigin().y(), 2));
 			double dx = transform.getOrigin().x();
 			double dy = transform.getOrigin().y();
-			if(distance <= MIN_DISTANCE || (dx>=-MIN_DISTANCE && dx <= MIN_DISTANCE && dy>=0 && dy <= MIN_DISTANCE+AVOID_SET_LENGHT)){
-				s <<"Q"<< i << " Q" << j << " "<<distance << " "<<dx<<" "<<dy<< " ";
+			double dz = transform.getOrigin().z();
+			
+			distance = sqrt(pow(dx, 2) + pow(dy, 2) + pow(dz, 2));
+			
+			if(distance <= MIN_DISTANCE || 
+			(dx>=-MIN_DISTANCE && dx <= MIN_DISTANCE && 
+			dy>=0 && dy <= MIN_DISTANCE+AVOID_SET_LENGHT &&
+			dz>=-MIN_DISTANCE && dz <= MIN_DISTANCE)){
+				s <<"Q"<< i << " Q" << j << " "<<distance << " "<<dx<<" "<<dy<< " "<<dz<< " ";
 			}//end if
 		   }//end try
 		   catch (tf::TransformException ex){
@@ -47,11 +53,11 @@ int main(int argc, char** argv){
     if(s.str().compare("") != 0){
 	    std_msgs::String msg;
 	    msg.data = s.str();
-	    //Message Format is: Source_QR, Target_QR, Euclidean Distance, Distance X axis, Distance Y axis.Then repeat.
+	    //Message Format is: Source_QR, Target_QR, Euclidean Distance, Distance X axis, Distance Y axis, Distance Z axis.Then repeat.
 	    collision_pair.publish(msg);
-	    //ROS_INFO("Collision between Q%d and Q%d. D=%f, Dx=%f, Dy=%f",i,j,distance,transform.getOrigin().x(),transform.getOrigin().y());
+	    //ROS_INFO("Collision between Q%d and Q%d. D=%f, Dx=%f, Dy=%f, Dz=%f",i,j,distance,transform.getOrigin().x(),transform.getOrigin().y(),transform.getOrigin().z());
     }//end if
     rate.sleep();
-  }
+  }//end of while loop
   return 0;
 };

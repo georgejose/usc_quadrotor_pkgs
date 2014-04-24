@@ -188,33 +188,41 @@ class Quadrocopter{
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", int_marker.name));
 	}
 	void subscriber_callback(const std_msgs::String::ConstPtr& msg)
-	{	double rotate_angle = 0;
+	{	double rotate_angle_xy = 0;
+		double rotate_angle_yz = 0;
 		double pi=3.14159265;
 		double sum_dx = 0;
 		double sum_dy = 0;
+		double sum_dz = 0;
 	 	ROS_INFO("I heard: [%s]", msg->data.c_str());
 		//Message Format is: Source_QR, Target_QR, Euclidean Distance, Distance X axis, Distance Y axis.Then repeat.
     		std::stringstream ssin(msg->data.c_str());
     		while (ssin.good()){
 			int i = 0;
-			std::string arr[5];
-			while(i<5){			
+			std::string arr[6];
+			while(i<6){			
 				ssin >> arr[i];
 				++i;
-			}//end loop
+			}//end while loop
 			if(int_marker.name.compare(arr[0]) == 0){
 				std::string Qc = arr[1];
 				ROS_INFO("I am [%s] colliding with [%s]",int_marker.name.c_str(),Qc.c_str());
 				double distance = StringToNumber<double>(arr[2]);
 				double dx = StringToNumber<double>(arr[3]);
 				double dy = StringToNumber<double>(arr[4]);
-				if(distance <= MIN_DISTANCE || (dx>=-MIN_DISTANCE && dx <= MIN_DISTANCE && dy>=0 && dy <= MIN_DISTANCE+AVOID_SET_LENGHT)){
+				double dz = StringToNumber<double>(arr[5]);
+				if(distance <= MIN_DISTANCE || 
+				(dx>=-MIN_DISTANCE && dx <= MIN_DISTANCE && 
+				dy>=0 && dy <= MIN_DISTANCE+AVOID_SET_LENGHT &&
+				dz>=-MIN_DISTANCE && dz <= MIN_DISTANCE)){
 					sum_dx += dx;
-					sum_dy += dy;					
+					sum_dy += dy;
+					sum_dz += dz;				
 				}//end if			
 			}//end if			
-    		}//end loop
-		rotate_angle = atan2(sum_dy,sum_dx)+pi/2;
+    		}//end while loop
+		rotate_angle_xy = atan2(sum_dy,sum_dx)+pi/2;
+		rotate_angle_yz = atan2(sum_dy,sum_dz)+pi/2;
 	}//end subscriber function
 
 	template <typename T>
