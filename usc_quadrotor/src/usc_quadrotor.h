@@ -38,6 +38,7 @@
 #define NUM_STRUCT 5
 #define UPDATE_RATE 0.1
 #define STEP 0.1
+#define ANGLE_STEP 0.01
 #define ALTITUDE 2.5
 #define SLEEP 0.05
 

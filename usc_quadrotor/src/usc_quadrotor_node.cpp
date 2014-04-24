@@ -21,6 +21,9 @@ class Quadrocopter{
 	double pos_x;
 	double pos_y;
 	double pos_z;
+	double roll;
+	double pitch;
+	double yaw;
 
 	Marker makeCylinder( InteractiveMarker &msg, const tf::Vector3 &position){
 		Marker marker;
@@ -103,6 +106,8 @@ class Quadrocopter{
 	}
 	
 	void move_down(){
+		set_orientation(pos_x, pos_y, pos_z);
+
 		double p = pos_z - ALTITUDE + 0.5;
 
 		while( floorf(pos_z*100)/100 > p){
@@ -123,7 +128,6 @@ class Quadrocopter{
 	}
 
 	void move_to(double x, double y, double z){
-
 		while(	floorf((x-pos_x)*10)/10 ||
 				floorf((y-pos_y)*10)/10 ||
 				floorf((z-pos_z)*10)/10 ){
@@ -152,6 +156,43 @@ class Quadrocopter{
 			ros::Duration(SLEEP).sleep();
 	}
 
+	void set_orientation(double x, double y, double z){
+
+			double angle = yaw;
+			
+			if(x!=pos_x){
+				if(y==pos_y && x<pos_x)
+					angle = 3.14;
+				else
+					angle = (y-pos_y)/(x-pos_x);
+				
+				if(abs(angle)==1.0 && x<pos_x)
+					angle *= -2.35;
+			}
+			else if(y>pos_y)
+				angle = 1.57; /* pi/2 */
+			else
+				angle = -1.57; /* pi/2 */
+			
+			// ROS_INFO("%f", angle);
+
+			while((int)((yaw-angle)*100)){
+				yaw+= ( yaw > angle ? -ANGLE_STEP : ANGLE_STEP);
+				ros::Duration(SLEEP/10).sleep();
+			}
+			yaw = angle;
+
+			angle = 0.0;
+			if(z!=pos_z)
+				angle = z > pos_z ? -0.78 : 0.78; /* pi/4 */
+			while((int)((pitch-angle)*100)){
+				pitch+= ( pitch > angle ? -ANGLE_STEP : ANGLE_STEP);
+				ros::Duration(SLEEP/10).sleep();
+			}
+			pitch = angle;
+			
+	}
+
 	void fly_to(std::vector<double> d){
 		
 		std::vector<int> v(get_plan(d));
@@ -164,7 +205,7 @@ class Quadrocopter{
 			double dZ = (double)(v[i]%10) !=2 ? (double)(v[i]%10) : - 1;
 			
 			// ROS_INFO("step %d %f %f %f", v[i], pos_x + dX, pos_y + dY, pos_z + dZ);
-
+			set_orientation( pos_x + dX, pos_y + dY, pos_z + dZ);
 			move_to( pos_x + dX, pos_y + dY, pos_z + dZ);
 		}
 	}
@@ -240,7 +281,7 @@ class Quadrocopter{
 		tf::Transform transform;
 		transform.setOrigin( tf::Vector3(pos_x, pos_y, pos_z));
 		tf::Quaternion q;
-		q.setRPY(0, 0, 0);
+		q.setRPY(roll, pitch, yaw);
 		transform.setRotation(q);
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", int_marker.name));
 	}
@@ -256,7 +297,10 @@ public:
 		
 		pos_x = position[0];
 		pos_y = position[1];
-		pos_z = position[2];		
+		pos_z = position[2];
+		roll = 0.0;
+		pitch = 0.0;
+		yaw = 0.0;	
 
 		timer = nh.createTimer(ros::Duration(UPDATE_RATE), &Quadrocopter::publisher_callback, this);
 		
