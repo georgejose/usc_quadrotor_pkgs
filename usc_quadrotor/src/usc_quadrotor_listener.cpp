@@ -30,7 +30,7 @@ int main(int argc, char** argv){
 			std::ostringstream s1,s2;
 			s1 << "Q" << i; //Source frame
 		 	s2 << "Q" << j; // Target frame
-			listener.lookupTransform(s2.str(), s1.str(), ros::Time(0), transform);
+			listener.lookupTransform(s1.str(), s2.str(), ros::Time(0), transform);
 			double dx = transform.getOrigin().x();
 			double dy = transform.getOrigin().y();
 			double dz = transform.getOrigin().z();
@@ -38,8 +38,8 @@ int main(int argc, char** argv){
 			distance = sqrt(pow(dx, 2) + pow(dy, 2) + pow(dz, 2));
 			
 			if(distance <= MIN_DISTANCE || 
-			(dx>=-MIN_DISTANCE && dx <= MIN_DISTANCE && 
-			dy>=0 && dy <= MIN_DISTANCE+AVOID_SET_LENGHT &&
+			(dy>=-MIN_DISTANCE && dy <= MIN_DISTANCE && 
+			dx>=0 && dx <= MIN_DISTANCE+AVOID_SET_LENGHT &&
 			dz>=-MIN_DISTANCE && dz <= MIN_DISTANCE)){
 				s <<"Q"<< i << " Q" << j << " "<<distance << " "<<dx<<" "<<dy<< " "<<dz<< " ";
 			}//end if

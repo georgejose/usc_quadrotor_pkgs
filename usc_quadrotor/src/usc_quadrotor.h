@@ -35,7 +35,7 @@
 // >>>>>>> b3c32f042586516559292f1e43a1e90674433be2
 #define STEP 0.1
 #define ALTITUDE 3
-#define SLEEP 0.05
+#define SLEEP 0.1
 #define AVOIDANCE_DISTANCE 5.0
 
 #define MIN_DISTANCE 3.0
