@@ -189,7 +189,7 @@ class Quadrocopter{
 	}
 	void subscriber_callback(const std_msgs::String::ConstPtr& msg)
 	{	double rotate_angle_xy = 0;
-		double rotate_angle_yz = 0;
+		double rotate_angle_xz = 0;
 		double pi=3.14159265;
 		double sum_dx = 0;
 		double sum_dy = 0;
@@ -212,8 +212,8 @@ class Quadrocopter{
 				double dy = StringToNumber<double>(arr[4]);
 				double dz = StringToNumber<double>(arr[5]);
 				if(distance <= MIN_DISTANCE || 
-				(dx>=-MIN_DISTANCE && dx <= MIN_DISTANCE && 
-				dy>=0 && dy <= MIN_DISTANCE+AVOID_SET_LENGHT &&
+				(dy>=-MIN_DISTANCE && dy <= MIN_DISTANCE && 
+				dx>=0 && dx <= MIN_DISTANCE+AVOID_SET_LENGHT &&
 				dz>=-MIN_DISTANCE && dz <= MIN_DISTANCE)){
 					sum_dx += dx;
 					sum_dy += dy;
@@ -221,8 +221,8 @@ class Quadrocopter{
 				}//end if			
 			}//end if			
     		}//end while loop
-		rotate_angle_xy = atan2(sum_dy,sum_dx)+pi/2;
-		rotate_angle_yz = atan2(sum_dy,sum_dz)+pi/2;
+		rotate_angle_xy = atan2(sum_dx,sum_dy)+pi/2;
+		rotate_angle_xz = atan2(sum_dx,sum_dz)+pi/2;
 	}//end subscriber function
 
 	template <typename T>
