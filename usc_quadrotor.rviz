@@ -41,9 +41,49 @@ Visualization Manager:
       Update Topic: /quadrotor_server/update
       Value: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
+        /C1:
+          Value: true
+        /C10:
+          Value: true
+        /C11:
+          Value: true
+        /C12:
+          Value: true
+        /C13:
+          Value: true
+        /C14:
+          Value: true
+        /C15:
+          Value: true
+        /C2:
+          Value: true
+        /C3:
+          Value: true
+        /C4:
+          Value: true
+        /C5:
+          Value: true
+        /C6:
+          Value: true
+        /C7:
+          Value: true
+        /C8:
+          Value: true
+        /C9:
+          Value: true
+        /Q1:
+          Value: true
+        /Q2:
+          Value: true
+        /Q3:
+          Value: true
+        /base_link:
+          Value: true
+        /world:
+          Value: true
         All Enabled: true
       Marker Scale: 1
       Name: TF
@@ -51,9 +91,44 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        /world:
+          /C1:
+            {}
+          /C10:
+            {}
+          /C11:
+            {}
+          /C13:
+            {}
+          /C14:
+            {}
+          /C15:
+            {}
+          /C2:
+            {}
+          /C3:
+            {}
+          /C4:
+            {}
+          /C5:
+            {}
+          /C6:
+            {}
+          /C8:
+            {}
+          /Q1:
+            /C7:
+              {}
+          /Q2:
+            /C9:
+              {}
+          /Q3:
+            /C12:
+              {}
+          /base_link:
+            {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Alpha: 0.25
       Cell Size: 1
       Class: rviz/Grid
@@ -95,17 +170,17 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 25.1658
+      Distance: 37.2458
       Focal Point:
         X: 15.0603
         Y: 22.8908
         Z: 4.03957
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.319797
+      Pitch: -0.010203
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.93215
+      Yaw: 4.02215
     Saved: ~
 Window Geometry:
   Displays:
