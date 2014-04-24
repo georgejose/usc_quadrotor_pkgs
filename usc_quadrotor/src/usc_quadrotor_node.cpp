@@ -222,7 +222,7 @@ class Quadrocopter{
 			}//end if			
     		}//end while loop
 		rotate_angle_xy = atan2(sum_dx,sum_dy)+pi/2;
-		rotate_angle_xz = atan2(sum_dx,sum_dz)+pi/2;
+		rotate_angle_xz = atan2(sum_dx,sum_dz);
 	}//end subscriber function
 
 	template <typename T>
