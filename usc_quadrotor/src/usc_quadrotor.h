@@ -38,8 +38,14 @@
 #define NUM_STRUCT 5
 #define UPDATE_RATE 0.1
 #define STEP 0.1
+
 #define ANGLE_STEP 0.01
 #define ALTITUDE 2.5
 #define SLEEP 0.05
+
+#define AVOIDANCE_DISTANCE 5.0
+
+#define MIN_DISTANCE 3.0
+#define AVOID_SET_LENGHT 2.0
 
 #endif
