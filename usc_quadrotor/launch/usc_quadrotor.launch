@@ -11,7 +11,7 @@
   <node  name="Q2" pkg="usc_quadrotor" type="usc_quadrotor_node" args="Q2 $(find usc_quadrotor)/structures/struct.txt" output="screen"/>
   <node  name="Q3" pkg="usc_quadrotor" type="usc_quadrotor_node" args="Q3 $(find usc_quadrotor)/structures/struct.txt" output="screen"/>
 
-  
+  <node pkg="usc_quadrotor" type="usc_quadrotor_listener" name="listener" output="screen"/>  
 
   <node name="Rviz" pkg="rviz" type="rviz" args="-d $(find usc_quadrotor)/../usc_quadrotor.rviz" />
   

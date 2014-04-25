@@ -19,7 +19,7 @@ class Quadrocopter{
 	std::string cube_name;
 
 	ros::Subscriber sub;
-	
+
 	double pos_x;
 	double pos_y;
 	double pos_z;
@@ -351,6 +351,8 @@ public:
 		yaw = 0.0;	
 
 		timer = nh.createTimer(ros::Duration(UPDATE_RATE), &Quadrocopter::publisher_callback, this);
+		
+		sub = nh.subscribe("collision_alert", 10, &Quadrocopter::subscriber_callback,this);
 		
 		int_marker.header.frame_id = int_marker.name;
 		int_marker.description = quadrotor_name;
