@@ -332,9 +332,10 @@ class Quadrocopter{
 				}//end if			
 			}//end if			
     		}//end while loop
-		
-		change_yaw = atan2(sum_dx,sum_dy)+pi/2;
-		change_pitch = atan2(sum_dx,sum_dz)+pi/2;
+
+		change_yaw = atan2(sum_dx,sum_dy);
+		change_pitch = -atan2(sum_dx,sum_dz);
+
 	}//end subscriber function
 
 	template <typename T>
