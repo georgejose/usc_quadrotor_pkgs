@@ -16,9 +16,10 @@ class Quadrocopter{
 	InteractiveMarker int_marker;
 	ros::NodeHandle nh;
 	ros::Timer timer;
+	ros::Subscriber sub;
 	std::string cube_name;
 
-	ros::Subscriber sub;
+	bool colliding;
 
 	double pos_x;
 	double pos_y;
@@ -26,6 +27,9 @@ class Quadrocopter{
 	double roll;
 	double pitch;
 	double yaw;
+
+	double change_yaw;
+	double change_pitch;
 
 	Marker makeCylinder( InteractiveMarker &msg, const tf::Vector3 &position){
 		Marker marker;
@@ -208,6 +212,11 @@ class Quadrocopter{
 			
 			// ROS_INFO("step %d %f %f %f", v[i], pos_x + dX, pos_y + dY, pos_z + dZ);
 			set_orientation( pos_x + dX, pos_y + dY, pos_z + dZ);
+			
+			if(colliding)
+				ROS_INFO("change yaw to %f and change pitch to %f", change_yaw, change_pitch);
+			colliding= false;
+			
 			move_to( pos_x + dX, pos_y + dY, pos_z + dZ);
 		}
 	}
@@ -288,14 +297,12 @@ class Quadrocopter{
 		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", int_marker.name));
 	}
 
-	void subscriber_callback(const std_msgs::String::ConstPtr& msg)
-	{	double rotate_angle_xy = 0;
-		double rotate_angle_xz = 0;
+	void subscriber_callback(const std_msgs::String::ConstPtr& msg){	
 		double pi=3.14159265;
 		double sum_dx = 0;
 		double sum_dy = 0;
 		double sum_dz = 0;
-	 	ROS_INFO("I heard: [%s]", msg->data.c_str());
+	 	// ROS_INFO("I heard: [%s]", msg->data.c_str());
 		//Message Format is: Source_QR, Target_QR, Euclidean Distance, Distance X axis, Distance Y axis.Then repeat.
     		std::stringstream ssin(msg->data.c_str());
     		while (ssin.good()){
@@ -307,7 +314,10 @@ class Quadrocopter{
 			}//end while loop
 			if(int_marker.name.compare(arr[0]) == 0){
 				std::string Qc = arr[1];
-				ROS_INFO("I am [%s] colliding with [%s]",int_marker.name.c_str(),Qc.c_str());
+				ROS_ERROR("I am [%s] colliding with [%s]",int_marker.name.c_str(),Qc.c_str());
+
+				colliding = true;
+
 				double distance = StringToNumber<double>(arr[2]);
 				double dx = StringToNumber<double>(arr[3]);
 				double dy = StringToNumber<double>(arr[4]);
@@ -322,8 +332,9 @@ class Quadrocopter{
 				}//end if			
 			}//end if			
     		}//end while loop
-		rotate_angle_xy = atan2(sum_dx,sum_dy)+pi/2;
-		rotate_angle_xz = atan2(sum_dx,sum_dz)+pi/2;
+		
+		change_yaw = atan2(sum_dx,sum_dy)+pi/2;
+		change_pitch = atan2(sum_dx,sum_dz)+pi/2;
 	}//end subscriber function
 
 	template <typename T>
@@ -350,10 +361,12 @@ public:
 		pitch = 0.0;
 		yaw = 0.0;	
 
+		colliding = false;
+
 		timer = nh.createTimer(ros::Duration(UPDATE_RATE), &Quadrocopter::publisher_callback, this);
 		
 		sub = nh.subscribe("collision_alert", 10, &Quadrocopter::subscriber_callback,this);
-		
+
 		int_marker.header.frame_id = int_marker.name;
 		int_marker.description = quadrotor_name;
 		tf::pointTFToMsg(tf::Vector3(0.0, 0.0, 0.0), int_marker.pose.position);
