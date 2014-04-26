@@ -21,6 +21,7 @@ class Quadrocopter{
 
 	bool colliding;
 	std::string colliding_with;
+
 	double pos_x;
 	double pos_y;
 	double pos_z;
@@ -200,6 +201,19 @@ class Quadrocopter{
 			
 	}
 
+	std::vector<double> get_delta(int v){
+		double dX = (double)(v/100) != 2 ? (double)(v/100) : - 1;
+		double dY = (double)((v%100)/10) !=2 ? (double)((v%100)/10) : - 1;
+		double dZ = (double)(v%10) !=2 ? (double)(v%10) : - 1;
+
+		std::vector<double> x;
+		x.push_back(dX);
+		x.push_back(dY);
+		x.push_back(dZ);
+
+		return x;
+	}
+
 	void fly_to(std::vector<double> d){
 		
 		std::vector<int> v(get_plan(d));
@@ -207,12 +221,10 @@ class Quadrocopter{
 		ROS_INFO("Received Plan from planner - size %d", (int)v.size());
 
 		for(int i=1; i < v.size(); i++){
-			double dX = (double)(v[i]/100) != 2 ? (double)(v[i]/100) : - 1;
-			double dY = (double)((v[i]%100)/10) !=2 ? (double)((v[i]%100)/10) : - 1;
-			double dZ = (double)(v[i]%10) !=2 ? (double)(v[i]%10) : - 1;
 			
-			// ROS_INFO("step %d %f %f %f", v[i], pos_x + dX, pos_y + dY, pos_z + dZ);
-			set_orientation( pos_x + dX, pos_y + dY, pos_z + dZ);
+			std::vector<double> delta(get_delta(v[i]));
+
+			set_orientation( pos_x + delta[0], pos_y + delta[1], pos_z + delta[2]);
 			
 			if(colliding)
 			{
@@ -220,23 +232,49 @@ class Quadrocopter{
 				double tempX = pos_x + 2*MIN_DISTANCE*sin(change_pitch)*cos(change_yaw);
 				double tempY = pos_y + 2*MIN_DISTANCE*sin(change_pitch)*sin(change_yaw);
 				double tempZ = pos_z + 2*MIN_DISTANCE*cos(change_pitch);
+				
 				std::vector<double> savePoint;
 				savePoint.push_back(pos_x);
 				savePoint.push_back(pos_y);
 				savePoint.push_back(pos_z);
+				
 				std::vector<double> tempPoint;
 				tempPoint.push_back(tempX);
 				tempPoint.push_back(tempY);
 				tempPoint.push_back(tempZ);
+				
 				colliding= false;
-				fly_to(tempPoint);	
 				colliding_with = "";
-				fly_to(d);
-				return;
+
+				fly_to(tempPoint);
+
+				tempX = pos_x; tempY = pos_y; tempZ = pos_z;
+				
+				int count = 4;
+
+				if(v.size() < i+count){
+					fly_to(d);
+					break;
+				}
+				else{
+					while(count--){
+						std::vector<double> temp_delta(get_delta(v[i]));
+						tempX += temp_delta[0];
+						tempY += temp_delta[1];
+						tempZ += temp_delta[2];
+						i++;
+					}
+					tempPoint[0] = tempX;
+					tempPoint[1] = tempY;
+					tempPoint[2] = tempZ;
+					fly_to(tempPoint);
+					i--;
+					continue;
+				}
 			}
 			
 			
-			move_to( pos_x + dX, pos_y + dY, pos_z + dZ);
+			move_to( pos_x + delta[0], pos_y + delta[1], pos_z + delta[2]);
 		}
 	}
 
