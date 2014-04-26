@@ -20,7 +20,6 @@ class Quadrocopter{
 	std::string cube_name;
 
 	bool colliding;
-	bool moving_to_tempPoint;
 	std::string colliding_with;
 	double pos_x;
 	double pos_y;
