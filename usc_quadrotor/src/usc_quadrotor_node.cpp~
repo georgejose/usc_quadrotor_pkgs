@@ -232,8 +232,7 @@ class Quadrocopter{
 				colliding= false;
 				fly_to(tempPoint);	
 				colliding_with = "";
-				fly_to(d);
-				return;
+				fly_to(savePoint);
 			}
 			
 			
