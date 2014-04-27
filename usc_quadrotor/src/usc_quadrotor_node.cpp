@@ -229,26 +229,27 @@ class Quadrocopter{
 			if(colliding)
 			{
 				ROS_INFO("change yaw to %f and change pitch to %f", change_yaw, change_pitch);
-				double tempX = pos_x + 2*MIN_DISTANCE*sin(change_pitch)*cos(change_yaw);
-				double tempY = pos_y + 2*MIN_DISTANCE*sin(change_pitch)*sin(change_yaw);
-				double tempZ = pos_z + 2*MIN_DISTANCE*cos(change_pitch);
+				int tempX = (int)(pos_x + 2*MIN_DISTANCE*sin(change_pitch)*cos(change_yaw));
+				int tempY = (int)(pos_y + 2*MIN_DISTANCE*sin(change_pitch)*sin(change_yaw));
+				int tempZ = (int)(pos_z + 2*MIN_DISTANCE*cos(change_pitch));
 				
-				std::vector<double> savePoint;
+			/*	std::vector<double> savePoint;
 				savePoint.push_back(pos_x);
 				savePoint.push_back(pos_y);
 				savePoint.push_back(pos_z);
-				
+				*/
 				std::vector<double> tempPoint;
-				tempPoint.push_back(tempX);
-				tempPoint.push_back(tempY);
-				tempPoint.push_back(tempZ);
+				tempPoint.push_back((double)tempX);
+				tempPoint.push_back((double)tempY);
+				tempPoint.push_back((double)tempZ);
 				
 				colliding= false;
+				fly_to(tempPoint);
 				colliding_with = "";
 
-				fly_to(tempPoint);
-
-				tempX = pos_x; tempY = pos_y; tempZ = pos_z;
+				fly_to(d);
+				return;
+				/*tempX = pos_x; tempY = pos_y; tempZ = pos_z;
 				
 				int count = 4;
 
@@ -270,7 +271,7 @@ class Quadrocopter{
 					fly_to(tempPoint);
 					i--;
 					continue;
-				}
+				}*/
 			}
 			
 			
@@ -338,6 +339,7 @@ class Quadrocopter{
 			source.erase(it1); 
 			destination.erase(it2);
 		}
+		ros::shutdown();
 	}
 
 	void call_action(){
@@ -371,7 +373,8 @@ class Quadrocopter{
 			}//end while loop
 			if(int_marker.name.compare(arr[0]) == 0){
 				std::string Qc = arr[1];
-				if(Qc.compare(colliding_with) != 0){
+				//if(Qc.compare(colliding_with) != 0){
+				if(colliding_with.compare("")==0){
 					colliding_with = Qc;
 					ROS_ERROR("I heard: [%s]", msg->data.c_str());
 					ROS_ERROR("I am [%s] colliding with [%s]",int_marker.name.c_str(),Qc.c_str());
