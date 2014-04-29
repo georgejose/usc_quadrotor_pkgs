@@ -80,11 +80,13 @@ class Quadrocopter{
 		return true;
 	}
 
-	std::vector<int> get_plan(std::vector<double> d){	
+	std::vector<int> get_plan(std::vector<double> d, bool edit){	
 		ros::NodeHandle n;
 		ros::ServiceClient client = n.serviceClient<usc_quadrotor::trajectory>("get_plan");
 		usc_quadrotor::trajectory srv;
 
+		srv.request.edit = edit;
+		
 		srv.request.source.push_back(pos_x);
 		srv.request.source.push_back(pos_y);
 		srv.request.source.push_back(pos_z);
@@ -98,7 +100,22 @@ class Quadrocopter{
 		return srv.response.path;
 	}
 
-	
+	bool check_goal(std::vector<double> g){	
+		ros::NodeHandle n;
+		ros::ServiceClient client = n.serviceClient<usc_quadrotor::get_pose>("get_pose");
+		usc_quadrotor::get_pose srv;
+		std::vector<double> v;
+
+		srv.request.goal = true;
+		srv.request.x = (int)g[0];
+		srv.request.y = (int)g[1];
+		srv.request.z = (int)g[2];
+		
+		while(!client.call(srv));
+
+		return srv.response.selected;
+	}
+
 	void move_up(){
 
 		double p = pos_z + ALTITUDE + 0.5;
@@ -183,16 +200,17 @@ class Quadrocopter{
 			
 			// ROS_INFO("%f", angle);
 
-			while((int)((yaw-angle)*100)){
-				//yaw+= ( yaw > angle ? -ANGLE_STEP : ANGLE_STEP);
-				yaw = angle;
-				//ros::Duration(SLEEP/10).sleep();
-			}
+/*			while((int)((yaw-angle)*100)){
+				yaw+= ( yaw > angle ? -ANGLE_STEP : ANGLE_STEP);
+				// yaw = angle;
+				ros::Duration(SLEEP/10).sleep();
+			}*/
 			yaw = angle;
 
 			angle = 0.0;
 			if(z!=pos_z)
 				angle = z > pos_z ? -0.78 : 0.78; /* pi/4 */
+			
 			while((int)((pitch-angle)*100)){
 				pitch+= ( pitch > angle ? -ANGLE_STEP : ANGLE_STEP);
 				ros::Duration(SLEEP/10).sleep();
@@ -216,7 +234,7 @@ class Quadrocopter{
 
 	void fly_to(std::vector<double> d){
 		
-		std::vector<int> v(get_plan(d));
+		std::vector<int> v(get_plan(d, false));
 
 		ROS_INFO("Received Plan from planner - size %d", (int)v.size());
 
@@ -231,13 +249,8 @@ class Quadrocopter{
 				ROS_INFO("change yaw to %f and change pitch to %f", change_yaw, change_pitch);
 				int tempX = (int)(pos_x + 2*MIN_DISTANCE*sin(change_pitch)*cos(change_yaw));
 				int tempY = (int)(pos_y + 2*MIN_DISTANCE*sin(change_pitch)*sin(change_yaw));
-				int tempZ = (int)(pos_z + 2*MIN_DISTANCE*cos(change_pitch));
+				int tempZ = (int)(pos_z + 2*MIN_DISTANCE*cos(3.14/2 - change_pitch));
 				
-			/*	std::vector<double> savePoint;
-				savePoint.push_back(pos_x);
-				savePoint.push_back(pos_y);
-				savePoint.push_back(pos_z);
-				*/
 				std::vector<double> tempPoint;
 				tempPoint.push_back((double)tempX);
 				tempPoint.push_back((double)tempY);
@@ -249,29 +262,6 @@ class Quadrocopter{
 
 				fly_to(d);
 				return;
-				/*tempX = pos_x; tempY = pos_y; tempZ = pos_z;
-				
-				int count = 4;
-
-				if(v.size() < i+count){
-					fly_to(d);
-					break;
-				}
-				else{
-					while(count--){
-						std::vector<double> temp_delta(get_delta(v[i]));
-						tempX += temp_delta[0];
-						tempY += temp_delta[1];
-						tempZ += temp_delta[2];
-						i++;
-					}
-					tempPoint[0] = tempX;
-					tempPoint[1] = tempY;
-					tempPoint[2] = tempZ;
-					fly_to(tempPoint);
-					i--;
-					continue;
-				}*/
 			}
 			
 			
@@ -309,17 +299,40 @@ class Quadrocopter{
 			int i,j;
 			std::list<std::vector<double> >::iterator it1;
 			std::list<std::vector<double> >::iterator it2;
+			std::list<std::vector<double> >::iterator it3;
 
 			
 			i=rand()%source.size();
 			it1 = source.begin();
 			while(i--)
 				it1++;
+
+			if(!check_goal(*it1)){
+				destination.erase(it1);
+				continue;
+			}
+
 		there:
 			j=rand()%destination.size();
 			it2 = destination.begin();
 			while(j--)
 				it2++;
+
+			it3 = destination.begin();
+			while(it3!= destination.end()){
+				if( (*it3)[0]==(*it2)[0] && 
+					(*it3)[1]==(*it2)[1] && 
+					(*it3)[2]< (*it2)[2])
+					it2 = it3;
+				it3++;
+			}
+
+			if(!check_goal(*it2)){
+				destination.erase(it2);
+				if(destination.empty())
+					return;
+				goto there;
+			}
 
 			int err = place_block( *it1, *it2, dest);
 			
@@ -337,9 +350,9 @@ class Quadrocopter{
 			}
 			
 			source.erase(it1); 
+			get_plan(*it2, true);
 			destination.erase(it2);
 		}
-		ros::shutdown();
 	}
 
 	void call_action(){
@@ -379,7 +392,7 @@ class Quadrocopter{
 					ROS_ERROR("I heard: [%s]", msg->data.c_str());
 					ROS_ERROR("I am [%s] colliding with [%s]",int_marker.name.c_str(),Qc.c_str());
 
-					colliding = true;
+					/*colliding = true;*/
 
 					double distance = StringToNumber<double>(arr[2]);
 					double dx = StringToNumber<double>(arr[3]);
@@ -458,12 +471,14 @@ public:
 	}
 };
 
+
 std::vector<double> get_random_pose(){	
 	ros::NodeHandle n;
 	ros::ServiceClient client = n.serviceClient<usc_quadrotor::get_pose>("get_pose");
 	usc_quadrotor::get_pose srv;
 	std::vector<double> v;
 
+	srv.request.goal = false;
 	while(!client.call(srv));
 
 	ROS_INFO("Random position (%d %d %d)",
@@ -524,6 +539,7 @@ int main(int argc, char** argv){
   	Quadrocopter Q(get_random_pose(), name);
 
 	server->applyChanges();			// 'commit' changes and send to all clients
+
 	ros::spin();
 	server.reset();
 	

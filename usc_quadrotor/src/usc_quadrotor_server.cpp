@@ -1,33 +1,32 @@
 #include "usc_quadrotor.h"
 
-bool quadrotor_positions[MAP_SIZE][MAP_SIZE] = {{false}};
+bool quadrotor_positions[MAP_SIZE][MAP_SIZE][MAP_SIZE] = {{false}};
 
-bool check_map(int x, int y){
-  return  quadrotor_positions[x  ][y  ] ||
-          quadrotor_positions[x-1][y  ] ||
-          quadrotor_positions[x  ][y-1] ||
-          quadrotor_positions[x-1][y-1] ||
-          quadrotor_positions[x+1][y+1] ||
-          quadrotor_positions[x+1][y  ] ||
-          quadrotor_positions[x  ][y+1] ||
-          quadrotor_positions[x-1][y+1] ||
-          quadrotor_positions[x+1][y-1];
+bool check_map(int x, int y, int z){
+  return quadrotor_positions[x][y][z];
 }
 
 
 bool get_position(usc_quadrotor::get_pose::Request  &req, usc_quadrotor::get_pose::Response &res){
-  
-  int x,y;
-  do{
-    x = rand()%MAP_SIZE;
-    y = rand()%MAP_SIZE;
-  }while( check_map(x,y));
-  
-  quadrotor_positions[x][y] = true;
 
-  res.x = x;
-  res.y = y;
-  res.z = 0; 
+  if(req.goal){
+    res.selected = check_map(req.x, req.y, req.z) ? false : true;
+    if(res.selected)
+      quadrotor_positions[req.x][req.y][req.z] = true;
+  }
+  else{
+    int x,y,z;
+    do{
+      x = rand()%MAP_SIZE;
+      y = rand()%MAP_SIZE;
+    }while( check_map(x, y, MAP_SIZE/2));
+    
+    quadrotor_positions[x][y][MAP_SIZE/2] = true;
+
+    res.x = x;
+    res.y = y;
+    res.z = MAP_SIZE/2; 
+  }
 }
 
 int main(int argc, char **argv){

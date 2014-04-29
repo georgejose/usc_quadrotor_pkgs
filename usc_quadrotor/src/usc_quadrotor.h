@@ -32,8 +32,8 @@
 
 #define FAN_R 0.5
 #define MAP_SIZE 50
-#define NUM_OF_QUAD 3
-#define NUM_CUBES 15
+#define NUM_OF_QUAD 5
+#define NUM_CUBES 45
 #define CUBE_SLEEP 0.01
 #define NUM_STRUCT 5
 #define UPDATE_RATE 0.1

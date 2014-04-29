@@ -137,6 +137,16 @@ double heuristic(point_t const *p1, point_t const *p2) {
 
 int valid_point(point_t p) 
 {
+  if(map[p.x][p.y][p.z])
+    return 0;
+  if(p.z-1>=0)
+    if(map[p.x][p.y][p.z-1])
+      return 0;
+  if(p.z-2>=0)
+    if(map[p.x][p.y][p.z-2])
+      return 0;
+  
+
   if (p.x >= 0 && p.y >= 0 && p.z >= 0 && p.x < MAP_SIZE && p.y < MAP_SIZE && p.z < MAP_SIZE)
     return 1;
   else
@@ -245,6 +255,11 @@ int goal_test(point_t p, point_t goal) {
 }
 
 bool get_path(usc_quadrotor::trajectory::Request  &req, usc_quadrotor::trajectory::Response &res){
+
+  if(req.edit){
+    map[req.destination[0]][req.destination[1]][req.destination[2]] = true;
+    return true;
+  }
 
   
   for (int i = 0; i < MAP_SIZE; i++) {

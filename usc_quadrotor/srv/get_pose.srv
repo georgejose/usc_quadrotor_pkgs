@@ -1,4 +1,9 @@
+bool goal
+int32 x
+int32 y
+int32 z
 ---
+bool selected
 int32 x
 int32 y
 int32 z
