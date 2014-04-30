@@ -386,34 +386,35 @@ class Quadrocopter{
 		//Message Format is: Source_QR, Target_QR, Euclidean Distance, Distance X axis, Distance Y axis.Then repeat.
     		std::stringstream ssin(msg->data.c_str());
     		while (ssin.good()){
-			int i = 0;
-			std::string arr[6];
-			while(i<6){			
-				ssin >> arr[i];
-				++i;
-			}//end while loop
-			if(int_marker.name.compare(arr[0]) == 0){
-				std::string Qc = arr[1];
-				if(Qc.compare(colliding_with) != 0 && !slave){
-				// if(colliding_with.compare("")==0){
-					colliding_with = Qc;
-					// ROS_ERROR("I heard: [%s]", msg->data.c_str());
-					ROS_ERROR("I am Q[%d] colliding with [%s]",marker_id,Qc.c_str());
-
-					int b = StringToNumber<int>(arr[1].substr(1,2));
-					
-					// ROS_ERROR("%d %f %d", marker_id, StringToNumber<double>(arr[2]), b);
-					
-					if(StringToNumber<double>(arr[2]) <= MIN_DISTANCE)
-						slave = true;	
-					else if( marker_id < b)
-						slave = true;
-
-					colliding = true;
 				
-					}//end if
-				}//end if		
-			}//end if			
+				int i = 0;
+				std::string arr[6];
+				while(i<6){			
+					ssin >> arr[i];
+					++i;
+				}//end while loop
+				
+				if(int_marker.name.compare(arr[0]) == 0){
+					std::string Qc = arr[1];
+					if(Qc.compare(colliding_with) != 0 && !slave){
+					// if(colliding_with.compare("")==0){
+						colliding_with = Qc;
+						// ROS_ERROR("I heard: [%s]", msg->data.c_str());
+						ROS_ERROR("I am Q[%d] colliding with [%s]",marker_id,Qc.c_str());
+
+						int b = StringToNumber<int>(arr[1].substr(1,2));
+						
+						// ROS_ERROR("%d %f %d", marker_id, StringToNumber<double>(arr[2]), b);
+						
+						if(StringToNumber<double>(arr[2]) <= MIN_DISTANCE)
+							slave = true;	
+						else if( marker_id < b)
+							slave = true;
+
+						colliding = true;
+					
+					}//end if		
+				}//end if			
     		}//end while loop
 	}//end subscriber function
 
