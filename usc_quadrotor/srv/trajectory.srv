@@ -1,4 +1,4 @@
-bool edit
+int32 edit
 bool check
 int32[] source
 int32[] destination
