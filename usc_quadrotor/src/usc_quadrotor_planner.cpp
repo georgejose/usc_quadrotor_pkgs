@@ -139,12 +139,12 @@ int valid_point(point_t p)
 {
   if(map[p.x][p.y][p.z])
     return 0;
-  if(p.z-1>=0)
+/*  if(p.z-1>=0)
     if(map[p.x][p.y][p.z-1])
       return 0;
   if(p.z-2>=0)
     if(map[p.x][p.y][p.z-2])
-      return 0;
+      return 0;*/
   
 
   if (p.x >= 0 && p.y >= 0 && p.z >= 0 && p.x < MAP_SIZE && p.y < MAP_SIZE && p.z < MAP_SIZE)

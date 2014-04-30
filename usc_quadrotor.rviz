@@ -36,7 +36,7 @@ Visualization Manager:
       Enable Transparency: true
       Enabled: true
       Name: InteractiveMarkers
-      Show Axes: false
+      Show Axes: true
       Show Descriptions: false
       Show Visual Aids: false
       Update Topic: /quadrotor_server/update
@@ -96,17 +96,17 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 22.4083
+      Distance: 15.2952
       Focal Point:
         X: 25.1478
         Y: 24.7979
         Z: 1.08888
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.269797
+      Pitch: 0.864797
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.0276201
+      Yaw: 0.0926142
     Saved: ~
 Window Geometry:
   Displays:
@@ -124,5 +124,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1301
-  X: 65
+  X: 58
   Y: 24

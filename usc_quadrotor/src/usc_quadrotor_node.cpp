@@ -244,29 +244,31 @@ class Quadrocopter{
 
 			set_orientation( pos_x + delta[0], pos_y + delta[1], pos_z + delta[2]);
 			
-			if(colliding)
-			{
-				ROS_INFO("change yaw to %f and change pitch to %f", change_yaw, change_pitch);
-				int tempX = (int)(pos_x + 2*MIN_DISTANCE*sin(change_pitch)*cos(change_yaw));
-				int tempY = (int)(pos_y + 2*MIN_DISTANCE*sin(change_pitch)*sin(change_yaw));
-				int tempZ = (int)(pos_z + 2*MIN_DISTANCE*cos(3.14/2 - change_pitch));
-				
-				std::vector<double> tempPoint;
-				tempPoint.push_back((double)tempX);
-				tempPoint.push_back((double)tempY);
-				tempPoint.push_back((double)tempZ);
-				
-				colliding= false;
-				fly_to(tempPoint);
-				colliding_with = "";
-
-				fly_to(d);
+			if(colliding){
+				resolve_collision( d);
 				return;
 			}
 			
-			
 			move_to( pos_x + delta[0], pos_y + delta[1], pos_z + delta[2]);
 		}
+	}
+
+	void resolve_collision(std::vector<double> d){
+		ROS_INFO("change yaw to %f and change pitch to %f", change_yaw, change_pitch);
+		int tempX = (int)(pos_x + 2*MIN_DISTANCE*sin(change_pitch)*cos(change_yaw));
+		int tempY = (int)(pos_y + 2*MIN_DISTANCE*sin(change_pitch)*sin(change_yaw));
+		int tempZ = (int)(pos_z + 2*MIN_DISTANCE*cos(3.14/2 - change_pitch));
+		
+		std::vector<double> tempPoint;
+		tempPoint.push_back((double)tempX);
+		tempPoint.push_back((double)tempY);
+		tempPoint.push_back((double)tempZ);
+		
+		colliding= false;
+		fly_to(tempPoint);
+		colliding_with = "";
+
+		fly_to(d);
 	}
 
 	int place_block(std::vector<double> s, std::vector<double> d, bool dest){
@@ -386,13 +388,13 @@ class Quadrocopter{
 			}//end while loop
 			if(int_marker.name.compare(arr[0]) == 0){
 				std::string Qc = arr[1];
-				//if(Qc.compare(colliding_with) != 0){
-				if(colliding_with.compare("")==0){
+				if(Qc.compare(colliding_with) != 0){
+				// if(colliding_with.compare("")==0){
 					colliding_with = Qc;
 					ROS_ERROR("I heard: [%s]", msg->data.c_str());
 					ROS_ERROR("I am [%s] colliding with [%s]",int_marker.name.c_str(),Qc.c_str());
 
-					/*colliding = true;*/
+					colliding = true;
 
 					double distance = StringToNumber<double>(arr[2]);
 					double dx = StringToNumber<double>(arr[3]);
