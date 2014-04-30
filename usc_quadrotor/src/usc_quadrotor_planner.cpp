@@ -258,12 +258,16 @@ bool get_path(usc_quadrotor::trajectory::Request  &req, usc_quadrotor::trajector
 
   if(req.edit == 1){
     map[req.destination[0]][req.destination[1]][req.destination[2]] = true;
+    ROS_INFO("Added obstacle at [%d %d %d]",
+    req.destination[0], req.destination[1], req.destination[2] );
     res.exists = true;
     return true;
   }
   
   if(req.edit == 2){
     map[req.destination[0]][req.destination[1]][req.destination[2]] = false;
+    ROS_INFO("Removed obstacle at [%d %d %d]",
+    req.destination[0], req.destination[1], req.destination[2] );
     return true;
   }
 

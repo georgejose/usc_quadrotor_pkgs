@@ -255,14 +255,18 @@ class Quadrocopter{
 	int resolve_collision(std::vector<double> d){
 		if(slave){
 			ROS_INFO("colliding %s SLAVE", int_marker.name.c_str());
+
 			std::vector<double> t;
 			t.push_back((double)pos_x);
 			t.push_back((double)pos_y);
 			t.push_back((double)pos_z);
 
 			get_plan(t ,1);
+
+			ROS_INFO("%s waiting at [%f %f %f]", int_marker.name.c_str(),
+				pos_x, pos_y, pos_z);
 			
-			ros::Duration(4).sleep();
+			ros::Duration(3).sleep();
 
 			get_plan(t ,2);
 
@@ -362,7 +366,9 @@ class Quadrocopter{
 			}
 			
 			source.erase(it1); 
-			get_plan(*it2, 1);
+			std::vector<double> b(*it2);
+			b[2]=((int)b[2])+1;
+			get_plan(b, 1);
 			destination.erase(it2);
 		}
 	}
