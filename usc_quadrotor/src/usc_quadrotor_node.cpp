@@ -14,12 +14,14 @@ void processFeedback(const InteractiveMarkerFeedbackConstPtr &feedback){
 
 class Quadrocopter{	
 	InteractiveMarker int_marker;
+	int marker_id;
 	ros::NodeHandle nh;
 	ros::Timer timer;
 	ros::Subscriber sub;
 	std::string cube_name;
 
 	bool colliding;
+	bool slave;
 	std::string colliding_with;
 
 	double pos_x;
@@ -52,7 +54,7 @@ class Quadrocopter{
 	InteractiveMarkerControl& makeCylinderControl( InteractiveMarker &msg, const tf::Vector3 &position ){
 		InteractiveMarkerControl control;
 		control.always_visible = true;
-		float d = FAN_R / 1.414;
+		double d = FAN_R / 2.0;
 		control.markers.push_back( makeCylinder(msg, tf::Vector3( - d, - d, 0)));
 		control.markers.push_back( makeCylinder(msg, tf::Vector3( - d, + d, 0)));
 		control.markers.push_back( makeCylinder(msg, tf::Vector3( + d, + d, 0)));
@@ -80,7 +82,7 @@ class Quadrocopter{
 		return true;
 	}
 
-	std::vector<int> get_plan(std::vector<double> d, bool edit){	
+	std::vector<int> get_plan(std::vector<double> d, int edit){	
 		ros::NodeHandle n;
 		ros::ServiceClient client = n.serviceClient<usc_quadrotor::trajectory>("get_plan");
 		usc_quadrotor::trajectory srv;
@@ -234,9 +236,9 @@ class Quadrocopter{
 
 	void fly_to(std::vector<double> d){
 		
-		std::vector<int> v(get_plan(d, false));
+		std::vector<int> v(get_plan(d, 0));
 
-		ROS_INFO("Received Plan from planner - size %d", (int)v.size());
+		// ROS_INFO("Received Plan from planner - size %d", (int)v.size());
 
 		for(int i=1; i < v.size(); i++){
 			
@@ -245,30 +247,41 @@ class Quadrocopter{
 			set_orientation( pos_x + delta[0], pos_y + delta[1], pos_z + delta[2]);
 			
 			if(colliding){
-				resolve_collision( d);
-				return;
+				if(resolve_collision( d) == 1)
+					return;
 			}
 			
 			move_to( pos_x + delta[0], pos_y + delta[1], pos_z + delta[2]);
 		}
 	}
 
-	void resolve_collision(std::vector<double> d){
-		ROS_INFO("change yaw to %f and change pitch to %f", change_yaw, change_pitch);
-		int tempX = (int)(pos_x + 2*MIN_DISTANCE*sin(change_pitch)*cos(change_yaw));
-		int tempY = (int)(pos_y + 2*MIN_DISTANCE*sin(change_pitch)*sin(change_yaw));
-		int tempZ = (int)(pos_z + 2*MIN_DISTANCE*cos(3.14/2 - change_pitch));
-		
-		std::vector<double> tempPoint;
-		tempPoint.push_back((double)tempX);
-		tempPoint.push_back((double)tempY);
-		tempPoint.push_back((double)tempZ);
-		
-		colliding= false;
-		fly_to(tempPoint);
-		colliding_with = "";
+	int resolve_collision(std::vector<double> d){
+		if(slave){
+			ROS_INFO("colliding %s SLAVE", int_marker.name.c_str());
+			std::vector<double> t;
+			t.push_back((double)pos_x);
+			t.push_back((double)pos_y);
+			t.push_back((double)pos_z);
 
-		fly_to(d);
+			get_plan(t ,1);
+			
+			ros::Duration(4).sleep();
+
+			get_plan(t ,2);
+
+			colliding= false;
+			colliding_with = "";
+			slave = false;
+			return 0;
+		}
+		else{
+			ROS_INFO("colliding %s MASTER", int_marker.name.c_str());
+			ros::Duration(1).sleep();
+			colliding= false;
+			fly_to(d);		
+			colliding_with = "";	
+			return 1;
+		}
 	}
 
 	int place_block(std::vector<double> s, std::vector<double> d, bool dest){
@@ -352,7 +365,7 @@ class Quadrocopter{
 			}
 			
 			source.erase(it1); 
-			get_plan(*it2, true);
+			get_plan(*it2, 1);
 			destination.erase(it2);
 		}
 	}
@@ -388,11 +401,20 @@ class Quadrocopter{
 			}//end while loop
 			if(int_marker.name.compare(arr[0]) == 0){
 				std::string Qc = arr[1];
-				if(Qc.compare(colliding_with) != 0){
+				if(Qc.compare(colliding_with) != 0 && !slave){
 				// if(colliding_with.compare("")==0){
 					colliding_with = Qc;
-					ROS_ERROR("I heard: [%s]", msg->data.c_str());
-					ROS_ERROR("I am [%s] colliding with [%s]",int_marker.name.c_str(),Qc.c_str());
+					// ROS_ERROR("I heard: [%s]", msg->data.c_str());
+					ROS_ERROR("I am Q[%d] colliding with [%s]",marker_id,Qc.c_str());
+
+					int b = StringToNumber<int>(arr[1].substr(1,2));
+					
+					// ROS_ERROR("%d %f %d", marker_id, StringToNumber<double>(arr[2]), b);
+					
+					if(StringToNumber<double>(arr[2]) <= MIN_DISTANCE)
+						slave = true;	
+					else if( marker_id < b)
+						slave = true;
 
 					colliding = true;
 
@@ -433,7 +455,7 @@ public:
 	Quadrocopter( const std::vector<double> &position, const std::string &quadrotor_name){
 
 		int_marker.name = quadrotor_name;
-		
+		marker_id = StringToNumber<double>(quadrotor_name.substr(1,2));
 		pos_x = position[0];
 		pos_y = position[1];
 		pos_z = position[2];
@@ -442,6 +464,7 @@ public:
 		yaw = 0.0;	
 
 		colliding = false;
+		slave = false;
 		//moving_to_tempPoint = false;
 		colliding_with = "";
 
@@ -483,8 +506,7 @@ std::vector<double> get_random_pose(){
 	srv.request.goal = false;
 	while(!client.call(srv));
 
-	ROS_INFO("Random position (%d %d %d)",
-		srv.response.x, srv.response.y, srv.response.z);
+	// ROS_INFO("Random position (%d %d %d)", srv.response.x, srv.response.y, srv.response.z);
 	
 	v.push_back((double)srv.response.x);
 	v.push_back((double)srv.response.y);

@@ -99,7 +99,7 @@ public:
 
 	void set_frame( std::string frame){
 		frame_name = frame;
-		ROS_INFO("%s's frame is now %s", int_marker.name.c_str(), frame_name.c_str());
+		// ROS_INFO("%s's frame is now %s", int_marker.name.c_str(), frame_name.c_str());
 	}
 
 	std::string get_name(){
@@ -181,7 +181,7 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 		  			server->applyChanges();
 		  			res.name = "none";
 		  			res.change = true;
-		  			ROS_INFO("%s's rel_pose is (%.2f %.2f %.2f)", C[i]->get_name().c_str(), C[i]->get_x(), C[i]->get_y(), C[i]->get_z());
+		  			// ROS_INFO("%s's rel_pose is (%.2f %.2f %.2f)", C[i]->get_name().c_str(), C[i]->get_x(), C[i]->get_y(), C[i]->get_z());
 		  			break;
 		  		}
 		  	}
@@ -198,7 +198,7 @@ bool change_frame(usc_quadrotor::change_frame::Request  &req, usc_quadrotor::cha
 	  			server->applyChanges();
 	  			res.name = C[i]->get_name();
 	  			res.change = true;
-	  			ROS_INFO("%s's rel_pose is (%.2f %.2f %.2f)", C[i]->get_name().c_str(), C[i]->get_x(), C[i]->get_y(), C[i]->get_z());
+	  			// ROS_INFO("%s's rel_pose is (%.2f %.2f %.2f)", C[i]->get_name().c_str(), C[i]->get_x(), C[i]->get_y(), C[i]->get_z());
 	  			break;
 	  		}
 	  	}

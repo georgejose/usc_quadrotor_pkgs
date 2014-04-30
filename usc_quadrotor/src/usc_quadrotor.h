@@ -25,9 +25,6 @@
 #include <list>
 #include <algorithm>
 
-/*#include <cstdio>
-#include <cstdlib>
-#include <cmath>*/
 #include <fstream>
 
 #define FAN_R 0.5
@@ -43,9 +40,9 @@
 #define ALTITUDE 2.5
 #define SLEEP 0.05
 
-#define AVOIDANCE_DISTANCE 3.0
+#define AVOIDANCE_DISTANCE 2.0
 
 #define MIN_DISTANCE 2.0
-#define AVOID_SET_LENGHT 5.0
+#define AVOID_SET_LENGHT 3.0
 
 #endif

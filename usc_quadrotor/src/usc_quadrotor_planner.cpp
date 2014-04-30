@@ -256,8 +256,14 @@ int goal_test(point_t p, point_t goal) {
 
 bool get_path(usc_quadrotor::trajectory::Request  &req, usc_quadrotor::trajectory::Response &res){
 
-  if(req.edit){
+  if(req.edit == 1){
     map[req.destination[0]][req.destination[1]][req.destination[2]] = true;
+    res.exists = true;
+    return true;
+  }
+  
+  if(req.edit == 2){
+    map[req.destination[0]][req.destination[1]][req.destination[2]] = false;
     return true;
   }
 
@@ -289,8 +295,8 @@ bool get_path(usc_quadrotor::trajectory::Request  &req, usc_quadrotor::trajector
   goal.y = req.destination[1];
   goal.z = req.destination[2];
   
-  ROS_INFO("Astar planning starts at (%d, %d, %d) for (%d, %d, %d)", 
-            start.x, start.y, start.z, goal.x, goal.y, goal.z);
+/*  ROS_INFO("Astar planning starts at (%d, %d, %d) for (%d, %d, %d)", 
+            start.x, start.y, start.z, goal.x, goal.y, goal.z);*/
 
   distance = cost(&start, &start) + heuristic(&start, &goal);
   priq_push(frontier, &start, distance);
@@ -333,7 +339,7 @@ bool get_path(usc_quadrotor::trajectory::Request  &req, usc_quadrotor::trajector
       /* 
        * Return the plan  
        */
-      ROS_INFO("Planning has finished with astar at (%d, %d, %d)", goal.x, goal.y, goal.z);
+      // ROS_INFO("Planning has finished with astar at (%d, %d, %d)", goal.x, goal.y, goal.z);
       
       return true;
     }
