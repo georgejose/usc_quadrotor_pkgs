@@ -31,9 +31,6 @@ class Quadrocopter{
 	double pitch;
 	double yaw;
 
-	double change_yaw;
-	double change_pitch;
-
 	Marker makeCylinder( InteractiveMarker &msg, const tf::Vector3 &position){
 		Marker marker;
 
@@ -385,10 +382,6 @@ class Quadrocopter{
 	}
 
 	void subscriber_callback(const std_msgs::String::ConstPtr& msg){	
-		double pi=3.14159265;
-		double sum_dx = 0;
-		double sum_dy = 0;
-		double sum_dz = 0;
 	 	// ROS_INFO("I heard: [%s]", msg->data.c_str());
 		//Message Format is: Source_QR, Target_QR, Euclidean Distance, Distance X axis, Distance Y axis.Then repeat.
     		std::stringstream ssin(msg->data.c_str());
@@ -417,26 +410,11 @@ class Quadrocopter{
 						slave = true;
 
 					colliding = true;
-
-					double distance = StringToNumber<double>(arr[2]);
-					double dx = StringToNumber<double>(arr[3]);
-					double dy = StringToNumber<double>(arr[4]);
-					double dz = StringToNumber<double>(arr[5]);
-					if(distance <= MIN_DISTANCE || 
-					(dy>=-MIN_DISTANCE && dy <= MIN_DISTANCE && 
-					dx>=0 && dx <= MIN_DISTANCE+AVOID_SET_LENGHT &&
-					dz>=-MIN_DISTANCE && dz <= MIN_DISTANCE)){
-						sum_dx += dx;
-						sum_dy += dy;
-						sum_dz += dz;				
+				
 					}//end if
 				}//end if		
 			}//end if			
     		}//end while loop
-
-		change_yaw = atan2(sum_dx,sum_dy);
-		change_pitch = -atan2(sum_dx,sum_dz);
-
 	}//end subscriber function
 
 	template <typename T>
