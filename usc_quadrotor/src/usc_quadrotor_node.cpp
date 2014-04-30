@@ -406,7 +406,7 @@ class Quadrocopter{
 						
 						// ROS_ERROR("%d %f %d", marker_id, StringToNumber<double>(arr[2]), b);
 						
-						if(StringToNumber<double>(arr[2]) <= MIN_DISTANCE)
+						if(StringToNumber<double>(arr[2]) < MIN_DISTANCE)
 							slave = true;	
 						else if( marker_id < b)
 							slave = true;
