@@ -29,7 +29,7 @@
 
 #define FAN_R 0.5
 #define MAP_SIZE 50
-#define NUM_OF_QUAD 3
+#define NUM_OF_QUAD 4
 #define NUM_CUBES 45
 #define NUM_STRUCT 5
 #define STEP 0.1
