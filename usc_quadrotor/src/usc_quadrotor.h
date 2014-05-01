@@ -29,16 +29,17 @@
 
 #define FAN_R 0.5
 #define MAP_SIZE 50
-#define NUM_OF_QUAD 5
+#define NUM_OF_QUAD 3
 #define NUM_CUBES 45
-#define CUBE_SLEEP 0.01
 #define NUM_STRUCT 5
-#define UPDATE_RATE 0.1
 #define STEP 0.1
 
 #define ANGLE_STEP 0.01
 #define ALTITUDE 2.5
+#define UPDATE_RATE 0.01
 #define SLEEP 0.05
+#define CUBE_SLEEP 0.01
+
 
 #define AVOIDANCE_DISTANCE 2.0
 
